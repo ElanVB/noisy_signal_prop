@@ -132,7 +132,7 @@ class Network():
 			pass
 
 		# initialize weights
-		print("initializing weights...")
+		# print("initializing weights...")
 		for shape in self.weight_shapes:
 			sigma = self.weight_sigma / np.sqrt(shape[0])
 			self.weight.append(np.random.normal(
@@ -141,15 +141,15 @@ class Network():
 
 		# initialize bias' if they will be non-zero
 		if self.bias_sigma != 0:
-			print("initializing bias'...")
+			# print("initializing bias'...")
 			self.bias = []
 
 			for shape in self.weight_shapes:
 				self.bias.append(np.random.normal(
 					loc=0, scale=self.bias_sigma, size=shape[-1]
 				).astype(self._DTYPE))
-		else:
-			print("No biases needed...")
+		# else:
+			# print("No biases needed...")
 
 	def _initialize_network(self):
 		self._check_weight_sigma()
@@ -196,6 +196,10 @@ class Network():
 
 		activation = np.array(x).astype(self._DTYPE)
 		if self.bias_sigma == 0:
+			# Our layer architecture expects noise to be added at the input to the layer
+			# activation = self.noise(self.activation(activation))
+			# that goes into network
+			# remember linear layer at end?
 			for w in self.weight:
 				# # try flip it....
 				activation = self.noise(self.activation(activation))
@@ -205,13 +209,11 @@ class Network():
 				# pre_activation = np.matmul(activation, w)
 				# pre_activations.append(pre_activation)
 				# activation = self.noise(self.activation(pre_activation))
-
-				# activation = self.noise(activation)
-				# pre_activation = np.matmul(activation, w)
-				# pre_activations.append(pre_activation)
-				# activation = self.activation(pre_activation)
 		else:
 			for i, w in enumerate(self.weight):
+				################################################################
+				# NB!!!! CHECK THIS!!!!!!!!!!
+				################################################################
 				pre_activation = np.matmul(activation, w) + self.bias[i]
 				pre_activations.append(pre_activation)
 				activation = self.activation(self.noise(pre_activation))

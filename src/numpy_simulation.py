@@ -2,8 +2,11 @@
 # Generate figures matching theory and simulation of the propagation of norms
 # and inner products in a random deep neural network.
 import os, sys, pickle
-from tqdm import tqdm
-# from tqdm import tqdm_notebook as tqdm
+
+if 'ipykernel' in sys.modules:
+	from tqdm import tqdm_notebook as tqdm
+else:
+	from tqdm import tqdm
 
 file_dir = os.path.dirname(os.path.realpath(__file__))
 sys.path.append(file_dir)
@@ -35,7 +38,7 @@ def qmap_statistics(
 	# Note: This could be sped up a bunch... - they left this, we should maybe speed it up then XD
 
 	# Range of squared lengths for q map plot (panel A)
-	nq = 100
+	nq = 30
 	qmax = 15
 	qrange = np.linspace(0, qmax, nq)
 
@@ -62,14 +65,14 @@ def qmap_statistics(
 		prob_1=prob_1, _lambda=_lambda
 	)
 	# Iterate over initial norms, computing convergence time
-	for tidx, qinit in enumerate(tqdm(qconverge)):
+	for tidx, qinit in enumerate(tqdm(qconverge, desc="input lengths")):
 		tstars[widx, bidx, tidx], _ = q_fixed_point_noise(
 			weight_sigma, bias_sigma, nonlinearity, qinit=qinit,
 			tol_frac=0.01, dist=dist, std=std, diversity=diversity,
 			prob_1=prob_1, _lambda=_lambda
 		)
 	# Dynamics of convergence of q map
-	for t in tqdm(range(1, nt)):
+	for t in tqdm(range(1, nt), desc="layers"):
 		qmaps[widx, bidx, :, t] = qmap_noise(
 			qmaps[widx, bidx, :, t - 1], weight_sigma, bias_sigma,
 			nonlinearity, dist=dist, std=std, diversity=diversity,
@@ -93,11 +96,12 @@ def single_layer_net_statistics(
 	# Create a feedforward fully-connected neural network.
 	# Note that here we flip the order of activations and linear layers so that
 	# the first operation is the activation function.
-	nq = 100
+	nq = 30
 	qmax = 15
 	qrange = np.linspace(0, qmax, nq)
+	npnts = 30
 
-	# n_hidden_layers = 0
+	num_networks = 50
 	n_hidden_layers = 1
 	n_hidden_units = 1000
 	din = 1000
@@ -110,15 +114,20 @@ def single_layer_net_statistics(
 	)
 
 	# Simulate a single layer at a large number of input norms (for panel A)
-	npnts = 20
-	qmap_sim = np.empty((nw, nb, nq, npnts))
-	for norm_idx, qnorm in enumerate(tqdm(qrange)):
-		xs = np.random.normal(loc=0, scale=np.sqrt(qnorm), size=(npnts, din))
-		h = net.get_acts(xs)[-1]
-		qmap_sim[0, 0, norm_idx] = (1.0 / din) * (h**2).sum(-1)
+	network_inputs = np.empty((nq, npnts, din))
+	qmap_sim = np.empty((nw, nb, num_networks, nq, npnts))
+	for norm_idx, qnorm in enumerate(tqdm(qrange, desc="generate inputs")):
+		network_inputs[norm_idx] = np.random.normal(loc=0, scale=np.sqrt(qnorm), size=(npnts, din))
+
+	network_inputs = np.reshape(network_inputs, (nq * npnts, din))
+
+	for network in tqdm(np.arange(num_networks), desc="network inits"):
+		net.initialize_weights()
+		acts = np.array(net.get_acts(network_inputs))[-1]
+		acts = np.reshape(acts, (nq, npnts, din))
+		qmap_sim[0, 0, network] = 1.0 / din * (acts**2).sum(-1)
 
 	np.save(stats_path, qmap_sim)
-
 
 def multi_layer_net_statistics(
 	dist=None, std=None, diversity=None, prob_1=None, _lambda=None,
@@ -131,8 +140,7 @@ def multi_layer_net_statistics(
 	if os.path.exists(stats_path) and replace == False:
 		return
 
-	# n_hidden_layers = 20
-	n_hidden_layers = 19
+	n_hidden_layers = 15
 	n_hidden_units = 1000
 	din = 1000
 
@@ -144,20 +152,20 @@ def multi_layer_net_statistics(
 	)
 
 	# Simulate multiple layers at a small set of points (for dynamics in panel B)
-	qidx = [26, 53, 80]
-	nq = 100
-	qmax = 15
-	qrange = np.linspace(0, qmax, nq)
-	qnorms = qrange[qidx]
-	nqnorms = len(qnorms)
+	input_length = 4
+	nq = 50
+	num_networks = 50
 
-	qmaps_sim = np.zeros((nw, nb, nqnorms, n_hidden_layers+1, nq))
-	for norm_idx, qnorm in enumerate(tqdm(qnorms)):
-		xs = np.random.randn(nq, din) * np.sqrt(qnorm)
-		acts = np.array(net.get_acts(xs))
-		qmaps_sim[0, 0, norm_idx, 0] = 1.0 / din * (xs**2).sum(-1)
-		qmaps_sim[0, 0, norm_idx, 1:] = 1.0 / din * (acts**2).sum(-1)
-		# qmaps_sim[0, 0, norm_idx] = 1.0 / din * (acts**2).sum(-1)
+	network_inputs = np.empty((nq, din))
+	qmaps_sim = np.empty((nw, nb, num_networks, n_hidden_layers+1, nq))
+
+	network_inputs = np.random.normal(loc=0, scale=np.sqrt(input_length), size=(nq, din))
+	qmaps_sim[0, 0, :, 0] = 1.0 / din * (network_inputs**2).sum(-1)
+
+	for network in tqdm(np.arange(num_networks), desc="network inits"):
+		net.initialize_weights()
+		acts = np.array(net.get_acts(network_inputs))
+		qmaps_sim[0, 0, network, 1:] = 1.0 / din * (acts**2).sum(-1)
 
 	np.save(stats_path, qmaps_sim)
 
@@ -235,7 +243,7 @@ def get_correlated_set(length=1000, size=50, set_type="linspace", start_correlat
 
 	# create the correlation values we would like our generated points to have
 	if start_correlation is None:
-		start_correlation = 1 - (1 / size)
+		start_correlation = 1
 
 	if set_type == "linspace":
 		correlations = np.linspace(start_correlation, 0, size)
@@ -283,7 +291,6 @@ weight_sigmas=None, nonlinearity=None, init=None, replace=False):
 	if os.path.exists(save_path) and replace == False:
 		return
 
-	# may need to change this to a circle rand net
 	n_hidden_layers = 1
 	n_hidden_units = 1000
 	din = 1000
@@ -294,34 +301,50 @@ weight_sigmas=None, nonlinearity=None, init=None, replace=False):
 		dist=dist, std=std, p=prob_1, init_method=init
 	)
 
-	num_trials = 100
+	num_trials = 50
+	num_networks = 50
 	num_correlations = 50
 
 	# create places to store results over multiple runs
+	network_inputs = np.empty((num_trials, num_correlations + 1, din))
 	input_correlations = np.empty((num_trials, num_correlations))
-	output_correlations = np.empty(input_correlations.shape)
+	network_outputs = np.empty((num_networks, num_trials, num_correlations + 1, din))
+	output_correlations = np.empty((num_networks, num_trials, num_correlations))
 
-	for trial in tqdm(np.arange(num_trials)):
+	for trial in tqdm(np.arange(num_trials), desc="generate correlation sets"):
 		# get a set of observations where the correlations between them is known
 		net_input, input_correlation = get_correlated_set(
-			length=din, size=num_correlations)
-
-		# feed this set into the network
-		net_output = net.get_acts(net_input)[-1]
-
-		# calculate the correlations between the new set
-		output_correlation = get_set_correlation(net_output)
+			length=din, size=num_correlations
+		)
 
 		# store results
+		network_inputs[trial] = net_input
 		input_correlations[trial] = input_correlation
-		output_correlations[trial] = output_correlation
+
+	network_inputs = np.reshape(network_inputs, (num_trials * (num_correlations + 1), din))
+
+	# run the experiment for a number of different network initializations
+	for network in tqdm(np.arange(num_networks), desc="network inits"):
+		net.initialize_weights()
+
+		# feed this set into the network
+		network_outputs[network] = np.reshape(
+			net.get_acts(network_inputs)[-1],
+			(num_trials, num_correlations + 1, din)
+		)
+
+	for network in tqdm(np.arange(num_networks), desc="network outputs"):
+		for trial in tqdm(np.arange(num_trials), desc="correlation calculations"):
+			# calculate the correlations between the new set
+			output_correlation = get_set_correlation(network_outputs[network, trial])
+
+			# store results
+			output_correlations[network, trial] = output_correlation
 
 	np.savez(save_path, input_correlations=input_correlations,
-			 output_correlations=output_correlations)
+			output_correlations=output_correlations)
 
 # Simulation for the curvature propagation for a multi-layer network - right panel
-
-
 def multi_layer_cov_prop_sim(dist=None, std=None, diversity=None, prob_1=None, _lambda=None,
 weight_sigmas=None, nonlinearity=None, init=None, replace=False):
 	save_path = os.path.join(results_dir, "{}_{}_{}_{}_{}_multi_layer_cmap_sim.npy".format(
@@ -342,16 +365,18 @@ weight_sigmas=None, nonlinearity=None, init=None, replace=False):
 		dist=dist, std=std, p=prob_1, init_method=init
 	)
 
-	num_trials = 1000
+	num_trials = 100
+	num_networks = 50
 	n_starting_correlations = cin.shape[0]
 	starting_correlations = np.array(cin)
 
 	# create places to store results over multiple runs
+	network_inputs = np.empty((n_starting_correlations, num_trials + 1, din))
 	correlations = np.empty(
-		(n_starting_correlations, num_trials, n_hidden_layers + 1))
+		(n_starting_correlations, num_networks, num_trials, n_hidden_layers + 1)
+	)
 
-	for starting_correlation_index in tqdm(np.arange(n_starting_correlations)):
-
+	for starting_correlation_index in tqdm(np.arange(n_starting_correlations), desc="generate correlation sets"):
 		# fetch the value we want the correlation to start at
 		starting_correlation = starting_correlations[starting_correlation_index]
 
@@ -362,23 +387,27 @@ weight_sigmas=None, nonlinearity=None, init=None, replace=False):
 		)
 
 		# add the input to the network as the 0'th correlation
-		correlations[starting_correlation_index, :, 0] = input_correlation
+		network_inputs[starting_correlation_index] = net_input
+		correlations[starting_correlation_index, :, :, 0] = input_correlation
 
-		# feed this set into the network
-		net_activations = net.get_acts(net_input)
+	# run the experiment for a number of different network initializations
+	for network in tqdm(np.arange(num_networks), desc="networks"):
+		net.initialize_weights()
 
-		for layer_index in tqdm(np.arange(n_hidden_layers)):
-			# calculate the correlations between the new set (formed by each layer's activations)
-			correlations[starting_correlation_index, :, layer_index + 1] =\
-				get_set_correlation(net_activations[layer_index])
+		for starting_correlation_index in tqdm(np.arange(n_starting_correlations), desc="initial correlations"):
+			# feed this set into the network
+			net_activations = net.get_acts(network_inputs[starting_correlation_index])
+
+			for layer_index in tqdm(np.arange(n_hidden_layers), desc="layers"):
+				# calculate the correlations between the new set (formed by each layer's activations)
+				correlations[starting_correlation_index, network, :, layer_index + 1] =\
+					get_set_correlation(net_activations[layer_index])
 
 	np.save(save_path, correlations)
 
-
-cin = np.array([0.0, 0.5, 0.9])  # NB: this must be changed in plot_exp.py too!
+cin = np.array([0.0, 0.5, 0.9]) # NB: this must be changed in plot_exp.py too!
 nctraj = len(cin)
 nt = 31
-
 
 def cov_prop_specific(dist=None, std=None, diversity=None, prob_1=None, _lambda=None,
 weight_sigmas=None, nonlinearity=None, replace=False):
@@ -397,7 +426,7 @@ weight_sigmas=None, nonlinearity=None, replace=False):
 
 	# ### Covariance dynamics for subset of points
 	ctrajs = np.zeros((len(widxs), nctraj, nt))
-	for i, (widx, bidx) in enumerate(tqdm(zip(widxs, bidxs), total=len(widxs))):
+	for i, (widx, bidx) in enumerate(tqdm(zip(widxs, bidxs), total=len(widxs), desc="remove loop here")):
 		q1 = qstars[widx, bidx]
 		ctrajs[i, :, 0] = cin  # * q1
 		for t in range(1, nt):
@@ -407,7 +436,7 @@ weight_sigmas=None, nonlinearity=None, replace=False):
 	ctrajs_ = ctrajs.copy()
 
 	ctrajs = np.zeros((nw, nb, nctraj, nt))
-	for i, (widx, bidx) in enumerate(tqdm(zip(widxs, bidxs), total=len(widxs))):
+	for i, (widx, bidx) in enumerate(tqdm(zip(widxs, bidxs), total=len(widxs), desc="remove loop here")):
 		ctrajs[widx, bidx] = ctrajs_[i]
 
 	np.save(save_path, ctrajs)
@@ -424,7 +453,7 @@ def curv_prop(dist=None, std=None, diversity=None, prob_1=None, _lambda=None, we
 	# ### Theory for curvature propagation
 	chi1 = np.zeros((nw, nb))
 	q_fixed_points = np.zeros((nw, nb))
-	n_layers = 31  # only plot up to layer 30 in panel 2B
+	n_layers = 31 # only plot up to layer 30 in panel 2B
 
 	qmap_theory_path = os.path.join(results_dir, "{}_{}_{}_{}_{}_q_maps.npz".format(
 		dist, std, diversity, prob_1, _lambda
@@ -432,8 +461,8 @@ def curv_prop(dist=None, std=None, diversity=None, prob_1=None, _lambda=None, we
 	statistics = np.load(qmap_theory_path)
 	q_fixed_points = statistics["qstars"]
 
-	for widx, weight_sigma in enumerate(tqdm(weight_sigmas, desc="weights")):
-		for bidx, bias_sigma in enumerate(tqdm(bias_sigmas, desc="bias'")):
+	for widx, weight_sigma in enumerate(tqdm(weight_sigmas, desc="remove loop here")):
+		for bidx, bias_sigma in enumerate(tqdm(bias_sigmas, desc="remove loop here")):
 			chi1[widx, bidx] = compute_chi1(
 				q_fixed_points[widx, bidx], weight_sigma, bias_sigma, dphi)
 
@@ -516,38 +545,6 @@ def load_acorr_std(dist=None, std=None, diversity=None, prob_1=None, _lambda=Non
 	autocorr_data = np.load(autocorr_path)
 	return autocorr_data['r_acts_std'].squeeze()
 
-# # ## Curvature Simulations
-
-
-# def get_circle_RandNet(
-#     dist=None, std=None, diversity=None, prob_1=None, _lambda=None
-# ):
-#     # Construct a model that maps an angle to an input vector in $d$ dimensions, and then passes it through a deep fully connected neural network.
-#     #
-#     # The `GreatCircle` input layer takes a scalar angle, $\theta$, as input, and outputs the point along a great cirlce in $d$ dimensions as its output:
-#     # $$\mathtt{gc\_input}(\theta) = \sqrt{q} \left(u_0 \cos(\theta) + u_1 \sin (\theta)\right)$$
-#     # where $\theta, q \in \mathbb{R}$ and $u_0, u_1 \in \mathbb{R}^d$.
-
-#     net_save_path = os.path.join(results_dir, "{}_{}_{}_{}_{}_circle_model".format(
-#         dist, std, diversity, prob_1, _lambda
-#     ))
-
-#     if os.path.exists(net_save_path):
-#         net = RandNet(None, None, None, model_file=net_save_path)
-#     else:
-#         _n_hidden_layers = 30  # Number of hidden layers
-#         _n_hidden_units = 1000  # Number of hidden units
-#         _din = _n_hidden_units  # Input dimensionality
-
-#         gc_input = GreatCircle(_din)
-#         net = RandNet(
-#             _din, _n_hidden_units, _n_hidden_layers, nonlinearity=nonlinearity_str,
-#             input_layer=gc_input, dist=dist, std=std, diversity=diversity,
-#             prob_1=prob_1, _lambda=_lambda, flip=True, init_method=init
-#         )
-
-#     return net
-
 # ### Compute the fixed point of the squared length from theory, $q^*(\sigma_w, \sigma_b)$
 # This is needed to appropriately scale the input norm for the simulations
 def load_q_stars(
@@ -566,53 +563,14 @@ def load_q_stars(
 		_nb = len(bias_sigmas)
 
 		qstars = np.zeros((_nw, _nb))
-		for widx, weight_sigma in enumerate(tqdm(_weight_sigmas, desc="weights")):
-			for bidx, bias_sigma in enumerate(tqdm(_bias_sigmas, desc="bias'")):
+		for widx, weight_sigma in enumerate(tqdm(_weight_sigmas, desc="remove loop here")):
+			for bidx, bias_sigma in enumerate(tqdm(_bias_sigmas, desc="remove loop here")):
 				_, qstars[widx, bidx] = q_fixed_point_noise(
 					weight_sigma, bias_sigma, nonlinearity, dist=dist, std=std,
 					diversity=diversity, prob_1=prob_1, _lambda=_lambda
 				)
 		np.save(qstars_path, qstars)
 	return qstars
-
-# # ### Compute statistics on simulated network
-# def curvature_stats(
-#     dist=None, std=None, diversity=None, prob_1=None, _lambda=None, replace=False
-# ):
-#     net_path = os.path.join(results_dir, "{}_{}_{}_{}_{}_circle_net.npy".format(
-#         dist, std, diversity, prob_1, _lambda
-#     ))
-#     stats_path = os.path.join(results_dir, "{}_{}_{}_{}_{}_curv_stats.npz".format(
-#         dist, std, diversity, prob_1, _lambda
-#     ))
-
-#     if os.path.exists(stats_path) and replace == False:
-#         return
-
-#     net = get_circle_RandNet(
-#         dist=dist, std=std, diversity=diversity, prob_1=prob_1, _lambda=_lambda
-#     )
-#     qstars = load_q_stars(
-#         dist=dist, std=std, diversity=diversity, prob_1=prob_1, _lambda=_lambda
-#     )
-
-#     _n_interp = 500  # Number of points to interpolate along the input angle, theta
-#     ts = np.linspace(-np.pi, np.pi, _n_interp, endpoint=False)
-
-#     _weight_sigmas = weight_sigmas  # weight_sigmas[widxs]
-#     _bias_sigmas = bias_sigmas  # bias_sigmas[bidxs][:1]
-#     _n_hidden_layers = 30  # Number of hidden layers
-#     _n_hidden_units = 1000  # Number of hidden units
-#     _din = _n_hidden_units  # Input dimensionality
-
-#     compute_minimal_curvature_net(
-#         net, ts, [0], _weight_sigmas, _bias_sigmas, qstar=qstars, save_file=net_path
-#     )
-#     compute_minimal_curvature_statistics_no_net(
-#         _n_hidden_layers, _n_hidden_units, ts, [0], _weight_sigmas, _bias_sigmas,
-#         qstar=qstars, acts_file=net_path, save_file=stats_path
-#     )
-
 
 def load(test, data_names):
 	data = {}
@@ -670,6 +628,19 @@ def mu_2(dist=None, std=None, prob_1=None): #std=None, prob_1=None):
 
 
 def noisy_signal_prop_simulations(dist=None, noise=None, act=None, init=None, replace=True):
+	####################################################################################################
+	####################################################################################################
+	####################################################################################################
+	####################################################################################################
+	####################################################################################################
+	# will this random seed cause the network to be initialized the same way for every experiment?
+	####################################################################################################
+	####################################################################################################
+	####################################################################################################
+	####################################################################################################
+	####################################################################################################
+	# np.random.seed(0)
+
 	file_dir = os.path.dirname(os.path.realpath(__file__))
 	sys.path.insert(0, file_dir + '/../')
 

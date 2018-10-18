@@ -42,8 +42,20 @@ def qmap_statistics(
 	qmax = 15
 	qrange = np.linspace(0, qmax, nq)
 
+	############################################################################
+	############################################################################
+	############################################################################
+	############################################################################
+	# # hacky fix for now
+	# index = np.searchsorted(qrange, 4)
+	# qrange = np.insert(qrange, index, [4])
+	############################################################################
+	############################################################################
+	############################################################################
+	############################################################################
+
 	# Number of iterations for the dynamics of convergence plot (panel B)
-	nt = 20
+	nt = 15
 
 	# Maximum number of iterations when computing convergence time (panel D)
 	nconverge = 25
@@ -627,19 +639,14 @@ def mu_2(dist=None, std=None, prob_1=None): #std=None, prob_1=None):
 		raise TypeError("dist must be a string")
 
 
-def noisy_signal_prop_simulations(dist=None, noise=None, act=None, init=None, replace=True):
+def noisy_signal_prop_simulations(dist=None, noise=None, act=None, init=None, replace=True, seed=None):
 	####################################################################################################
+	# Is this a good way to set a random seed?
 	####################################################################################################
-	####################################################################################################
-	####################################################################################################
-	####################################################################################################
-	# will this random seed cause the network to be initialized the same way for every experiment?
-	####################################################################################################
-	####################################################################################################
-	####################################################################################################
-	####################################################################################################
-	####################################################################################################
-	# np.random.seed(0)
+	if seed is not None:
+		np.random.seed(seed)
+	else:
+		np.random.seed(0)
 
 	file_dir = os.path.dirname(os.path.realpath(__file__))
 	sys.path.insert(0, file_dir + '/../')
@@ -651,10 +658,23 @@ def noisy_signal_prop_simulations(dist=None, noise=None, act=None, init=None, re
 		test = {"dist": dist}
 
 	if "over" in init:
-		weight_sigmas = [1.25 * np.sqrt(2 / mu_2(**test))]
+		if "bern" in dist:
+			weight_sigmas = [1.15 * np.sqrt(2 / mu_2(**test))]
+		elif "gauss" in dist:
+			weight_sigmas = [1.25 * np.sqrt(2 / mu_2(**test))]
+		else:
+			weight_sigmas = [1.05 * np.sqrt(2 / mu_2(**test))]
+
 		# weight_sigmas = [(1 + (np.random.rand() * 0.1 + 0.05)) * np.sqrt(2 / mu_2(**test))]
 	elif "under" in init:
-		weight_sigmas = [1 - (np.random.rand() * 0.1 + 0.05) * np.sqrt(2 / mu_2(**test))]
+		if "bern" in dist:
+			weight_sigmas = [0.85 * np.sqrt(2 / mu_2(**test))]
+		elif "gauss" in dist:
+			weight_sigmas = [0.75 * np.sqrt(2 / mu_2(**test))]
+		else:
+			weight_sigmas = [0.6 * np.sqrt(2 / mu_2(**test))]
+
+		# weight_sigmas = [1 - (np.random.rand() * 0.1 + 0.05) * np.sqrt(2 / mu_2(**test))]
 	elif "crit" in init:
 		if dist == "none":
 			weight_sigmas = [np.sqrt(2)]

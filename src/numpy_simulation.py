@@ -676,7 +676,9 @@ def noisy_signal_prop_simulations(dist=None, noise=None, act=None, init=None, re
 
 		# weight_sigmas = [1 - (np.random.rand() * 0.1 + 0.05) * np.sqrt(2 / mu_2(**test))]
 	elif "crit" in init:
-		if dist == "none":
+		if dist == "none" and act=="tanh":
+			weight_sigmas = [1]
+		elif dist == "none" and act=="relu":
 			weight_sigmas = [np.sqrt(2)]
 		else:
 			weight_sigmas = [np.sqrt(2 / mu_2(**test))]

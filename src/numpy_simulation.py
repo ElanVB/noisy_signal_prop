@@ -676,12 +676,16 @@ def noisy_signal_prop_simulations(dist=None, noise=None, act=None, init=None, re
 
 		# weight_sigmas = [1 - (np.random.rand() * 0.1 + 0.05) * np.sqrt(2 / mu_2(**test))]
 	elif "crit" in init:
-		if dist == "none" and act=="tanh":
-			weight_sigmas = [1]
-		elif dist == "none" and act=="relu":
+		if dist == "none":
 			weight_sigmas = [np.sqrt(2)]
 		else:
 			weight_sigmas = [np.sqrt(2 / mu_2(**test))]
+
+	elif "xavier" in init:
+		weight_sigmas = [1]
+
+	elif "he" in init:
+		weight_sigmas = [np.sqrt(2)]
 
 	global results_dir
 	results_dir = os.path.join(file_dir, "results", dist, act, init)

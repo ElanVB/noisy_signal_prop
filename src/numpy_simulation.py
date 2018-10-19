@@ -681,6 +681,12 @@ def noisy_signal_prop_simulations(dist=None, noise=None, act=None, init=None, re
 		else:
 			weight_sigmas = [np.sqrt(2 / mu_2(**test))]
 
+	elif "xavier" in init:
+		weight_sigmas = [1]
+
+	elif "he" in init:
+		weight_sigmas = [np.sqrt(2)]
+
 	global results_dir
 	results_dir = os.path.join(file_dir, "results", dist, act, init)
 	if not os.path.exists(results_dir):

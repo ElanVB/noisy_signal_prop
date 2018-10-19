@@ -101,7 +101,7 @@ class Network():
 				if self.init_method == "xavier":
 					self.weight_sigma = 1
 				elif self.init_method == "he":
-					self.weight_sigma = 2
+					self.weight_sigma = np.sqrt(2)
 				elif "crit" in self.init_method:
 					# self.weight_sigma = 2 * self.p
 					pass

@@ -190,7 +190,7 @@ class Network():
 		else:
 			raise ValueError("Given noise distribution is invalid.")
 
-	def get_acts(self, x):
+	def get_acts(self, x, early_stopping=False, return_variance=False):
 		# don't apply noise on last layer?
 		pre_activations = []
 
@@ -204,11 +204,19 @@ class Network():
 				# # try flip it....
 				activation = self.noise(self.activation(activation))
 				activation = np.matmul(activation, w)
-				pre_activations.append(activation)
+
+				if return_variance:
+					variance = np.sum(activation**2)
+					pre_activations.append(variance)
+				else:
+					pre_activations.append(activation)
 
 				# pre_activation = np.matmul(activation, w)
 				# pre_activations.append(pre_activation)
 				# activation = self.noise(self.activation(pre_activation))
+
+				if early_stopping and (np.sum(np.isnan(variance) + np.isinf(variance)) > 0):
+					break
 		else:
 			for i, w in enumerate(self.weight):
 				################################################################

@@ -68,8 +68,6 @@ def qmap_statistics(
 	weight_sigma = weight_sigmas[0]
 	bias_sigma = bias_sigmas[0]
 
-	print(nonlinearity)
-
 	# Compute fixed points
 	_, qstars[widx, bidx] = q_fixed_point_noise(
 		weight_sigma, bias_sigma, nonlinearity, qinit=3.0,
@@ -710,14 +708,14 @@ def noisy_signal_prop_simulations(dist=None, noise=None, act=None, init=None, re
 
 	############################################################################
 
-	# print("qmap calculations...")
-	# print("Calculating Theory:")
-	# qmap_statistics(**test, weight_sigmas=weight_sigmas, nonlinearity=nonlinearity, replace=REPLACE)
+	print("qmap calculations...")
+	print("Calculating Theory:")
+	qmap_statistics(**test, weight_sigmas=weight_sigmas, nonlinearity=nonlinearity, replace=REPLACE)
 
-	# print("Simulating network")
-	# print("Single layer sims...")
-	# single_layer_net_statistics(**test, weight_sigmas=weight_sigmas,
-	# 							nonlinearity=nonlinearity_str, init=init, replace=REPLACE)
+	print("Simulating network")
+	print("Single layer sims...")
+	single_layer_net_statistics(**test, weight_sigmas=weight_sigmas,
+								nonlinearity=nonlinearity_str, init=init, replace=REPLACE)
 
 	print("Multi-layer sims...")
 	multi_layer_net_statistics(**test, weight_sigmas=weight_sigmas,
@@ -728,22 +726,22 @@ def noisy_signal_prop_simulations(dist=None, noise=None, act=None, init=None, re
 
 	############################################################################
 
-	# print("Cmap calculations...")
-	# print("General cov prop...")
-	# cov_prop(**test, weight_sigmas=weight_sigmas, nonlinearity=nonlinearity, replace=REPLACE)
+	print("Cmap calculations...")
+	print("General cov prop...")
+	cov_prop(**test, weight_sigmas=weight_sigmas, nonlinearity=nonlinearity, replace=REPLACE)
 
-	# print("Specific cov prop...")
-	# cov_prop_specific(**test, weight_sigmas=weight_sigmas, nonlinearity=nonlinearity, replace=REPLACE)
+	print("Specific cov prop...")
+	cov_prop_specific(**test, weight_sigmas=weight_sigmas, nonlinearity=nonlinearity, replace=REPLACE)
 
-	# print("Curvature prop...")
-	# curv_prop(**test, weight_sigmas=weight_sigmas, dphi=dphi, replace=REPLACE)
+	print("Curvature prop...")
+	curv_prop(**test, weight_sigmas=weight_sigmas, dphi=dphi, replace=REPLACE)
 
-	# print("General cov prop simulation...")
-	# cov_prop_sim(**test, weight_sigmas=weight_sigmas,
-	# 			 nonlinearity=nonlinearity_str, init=init, replace=REPLACE)
+	print("General cov prop simulation...")
+	cov_prop_sim(**test, weight_sigmas=weight_sigmas,
+				 nonlinearity=nonlinearity_str, init=init, replace=REPLACE)
 
-	# print("Simulate multi-layer cov prop...")
-	# multi_layer_cov_prop_sim(**test, weight_sigmas=weight_sigmas,
-	# 						 nonlinearity=nonlinearity_str, init=init, replace=REPLACE)
+	print("Simulate multi-layer cov prop...")
+	multi_layer_cov_prop_sim(**test, weight_sigmas=weight_sigmas,
+							 nonlinearity=nonlinearity_str, init=init, replace=REPLACE)
 
 	############################################################################

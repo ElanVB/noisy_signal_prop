@@ -6,8 +6,10 @@ from theory import depth
 from numpy_net import Network
 from data_iterator import DataIterator
 
+dataset = "mnist" # "cifar-10"
+
 file_dir = os.path.dirname(os.path.realpath(__file__))
-save_dir = os.path.join(file_dir, "results/variance_depth/cifar-10")
+save_dir = os.path.join(file_dir, "results/trainable_depth/{}".format(dataset))
 data_save_path = os.path.join(save_dir, "variance_depth.npy")
 sigma_save_path = os.path.join(save_dir, "variance_depth_sigma.npy")
 
@@ -21,10 +23,12 @@ def test_init(weight_sigma_square):
 	print("Testing sigma_w = {: 2.2f}; Using {: 4d} layers...".format(weight_sigma_square, num_hidden_layers))
 
 	batch_size = 128
-	input_data = cifar10.load().astype(np.float32)
-	num_batches = np.ceil(input_data.shape[0] / batch_size).astype(int)
-	# input_data = mnist.load().astype(np.float32)
-	# num_batches = np.ceil(input_data.shape[0] / batch_size).astype(int)
+
+	input_data = None
+	if dataset == "mnist":
+		input_data = mnist.load().astype(np.float32)
+	elif dataset == "cifar10":
+		input_data = cifar10.load().astype(np.float32)
 
 	# batch data for memory purposes
 	input_data_iterator = DataIterator(batch_size, input_data, input_data)
@@ -38,7 +42,7 @@ def test_init(weight_sigma_square):
 	variances = np.empty((num_batches, max_num_layers))
 	variances.fill(np.nan)
 
-	with tqdm(desc="batches", total=num_batches) as progress_bar:
+	with tqdm(desc="batches", total=input_data_iterator.size()) as progress_bar:
 		for i, batch in enumerate(input_data_iterator):
 			variance = net.get_acts(batch.input, early_stopping=True, return_variance=True)
 			variances[i, :len(variance)] = variance

@@ -18,6 +18,7 @@ class DataIterator():
 		self.output_data = np.array(outputs)
 		self.batch_size = batch_size
 		self.max_index = self.input_data.shape[0]
+		self.num_batches = np.ceil(self.max_index / self.batch_size).astype(int)
 
 	def next_batch(self):
 		next_index = self.current_index + self.batch_size
@@ -31,3 +32,6 @@ class DataIterator():
 		self.current_index = 0
 		while self.current_index < self.max_index:
 			yield self.next_batch()
+
+	def size(self):
+		return self.num_batches

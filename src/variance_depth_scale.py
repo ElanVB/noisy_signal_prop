@@ -7,9 +7,9 @@ from numpy_net import Network
 from data_iterator import DataIterator
 
 file_dir = os.path.dirname(os.path.realpath(__file__))
-save_dir = os.join(file_dir, "results/variance_depth/cifar-10")
-data_save_path = os.path.join(file_dir, "results/variance_depth/cifar-10/variance_depth.npy")
-sigma_save_path = os.path.join(file_dir, "results/variance_depth/cifar-10/variance_depth_sigma.npy")
+save_dir = os.path.join(file_dir, "results/variance_depth/cifar-10")
+data_save_path = os.path.join(save_dir, "variance_depth.npy")
+sigma_save_path = os.path.join(save_dir, "variance_depth_sigma.npy")
 
 os.makedirs(save_dir, exist_ok=True)
 

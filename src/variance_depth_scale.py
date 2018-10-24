@@ -9,7 +9,7 @@ from data_iterator import DataIterator
 dataset = "mnist" # "cifar-10"
 
 file_dir = os.path.dirname(os.path.realpath(__file__))
-save_dir = os.path.join(file_dir, "results/trainable_depth/{}".format(dataset))
+save_dir = os.path.join(file_dir, "results/variance_depth/{}".format(dataset))
 data_save_path = os.path.join(save_dir, "variance_depth.npy")
 sigma_save_path = os.path.join(save_dir, "variance_depth_sigma.npy")
 

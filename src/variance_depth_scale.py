@@ -32,6 +32,7 @@ def test_init(weight_sigma_square):
 
 	# batch data for memory purposes
 	input_data_iterator = DataIterator(batch_size, input_data, input_data)
+	num_batches = input_data_iterator.size()
 
 	input_size = input_data.shape[-1]
 	net = Network(
@@ -42,7 +43,7 @@ def test_init(weight_sigma_square):
 	variances = np.empty((num_batches, max_num_layers))
 	variances.fill(np.nan)
 
-	with tqdm(desc="batches", total=input_data_iterator.size()) as progress_bar:
+	with tqdm(desc="batches", total=num_batches) as progress_bar:
 		for i, batch in enumerate(input_data_iterator):
 			variance = net.get_acts(batch.input, early_stopping=True, return_variance=True)
 			variances[i, :len(variance)] = variance

@@ -61,7 +61,7 @@ class Network():
 		if isinstance(self.activation, str):
 			# convert the string "relu" to a callable function (that applies ReLU)
 			if self.activation.lower() == "relu":
-				print("Setting activation to ReLU...")
+				# print("Setting activation to ReLU...")
 				self.activation = self._ReLU
 			# same for "tanh"
 			elif self.activation.lower() == "tanh":
@@ -201,19 +201,23 @@ class Network():
 			# that goes into network
 			# remember linear layer at end?
 			for w in self.weight:
-				# # try flip it....
+				# flipped layer topology
 				activation = self.noise(self.activation(activation))
 				activation = np.matmul(activation, w)
 
 				if return_variance:
-					variance = np.sum(activation**2)
+					variance = np.mean(np.sum(activation**2, axis=-1) / activation.shape[-1], axis=0)
 					pre_activations.append(variance)
 				else:
 					pre_activations.append(activation)
 
 				# pre_activation = np.matmul(activation, w)
-				# pre_activations.append(pre_activation)
 				# activation = self.noise(self.activation(pre_activation))
+				# if return_variance:
+				# 	variance = np.mean(np.sum(pre_activation**2, axis=-1) / pre_activation.shape[-1], axis=0)
+				# 	pre_activations.append(variance)
+				# else:
+				# 	pre_activations.append(pre_activation)
 
 				if early_stopping and (np.sum(np.isnan(variance) + np.isinf(variance)) > 0):
 					break

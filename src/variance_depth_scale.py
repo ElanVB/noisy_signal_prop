@@ -1,5 +1,5 @@
 import numpy as np
-import mnist, sys, os
+import mnist, cifar10, sys, os
 
 from tqdm import tqdm
 from theory import depth
@@ -7,8 +7,8 @@ from numpy_net import Network
 from data_iterator import DataIterator
 
 file_dir = os.path.dirname(os.path.realpath(__file__))
-data_save_path = os.path.join(file_dir, "results/variance_depth.npy")
-sigma_save_path = os.path.join(file_dir, "results/variance_depth_sigma.npy")
+data_save_path = os.path.join(file_dir, "results/variance_depth/cifar-10/variance_depth.npy")
+sigma_save_path = os.path.join(file_dir, "results/variance_depth/cifar-10/variance_depth_sigma.npy")
 
 def test_init(weight_sigma_square):
 	p = 0.6
@@ -18,8 +18,10 @@ def test_init(weight_sigma_square):
 	print("Testing sigma_w = {: 2.2f}; Using {: 4d} layers...".format(weight_sigma_square, num_hidden_layers))
 
 	batch_size = 128
-	input_data = mnist.load().astype(np.float32)
+	input_data = cifar10.load().astype(np.float32)
 	num_batches = np.ceil(input_data.shape[0] / batch_size).astype(int)
+	# input_data = mnist.load().astype(np.float32)
+	# num_batches = np.ceil(input_data.shape[0] / batch_size).astype(int)
 
 	# batch data for memory purposes
 	input_data_iterator = DataIterator(batch_size, input_data, input_data)

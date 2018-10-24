@@ -6,7 +6,7 @@ from theory import depth
 from numpy_net import Network
 from data_iterator import DataIterator
 
-dataset = "mnist" # "cifar-10"
+dataset = "mnist" # "cifar10"
 
 file_dir = os.path.dirname(os.path.realpath(__file__))
 save_dir = os.path.join(file_dir, "results/variance_depth/{}".format(dataset))

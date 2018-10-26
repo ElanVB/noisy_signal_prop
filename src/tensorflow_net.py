@@ -2,14 +2,14 @@ import sys
 import numpy as np
 import tensorflow as tf
 
-from tqdm import tqdm
+# from tqdm import tqdm
 from tensorflow_var_init import VarInitializer
 
 class Network():
 	"""
 	A tensorflow implementation of a neural network.
 	"""
-	def __init__(self, input_dim, output_dim, hidden_layers=([1000,] * 1), initialization="crit", p=1.0, learning_rate=1e-4, load=False, net_type="reg", act="relu", optimizer="Adam", seed=None):
+	def __init__(self, input_dim, output_dim, hidden_layers=([1000,] * 1), initialization="crit", p=1.0, learning_rate=1e-3, load=False, net_type="reg", act="relu", optimizer="SGD", seed=None):
 		self.verbose = False
 		self.TF_DTYPE = tf.float32
 
@@ -50,7 +50,9 @@ class Network():
 			self.loss = tf.losses.softmax_cross_entropy(self.target, self.net)
 
 		# define optimizer
-		if optimizer == "Adam":
+		if optimizer == "SGD":
+			self.optimizer = tf.train.GradientDescentOptimizer
+		elif optimizer == "Adam":
 			self.optimizer = tf.train.AdamOptimizer
 		elif optimizer == "Nadam":
 			self.optimizer = tf.contrib.opt.NadamOptimizer
@@ -184,39 +186,40 @@ class Network():
 		val_losses = np.empty((num_val_batches, ), dtype=np.float16)
 		total_batches = num_train_batches + num_val_batches
 
-		for epoch_index in tqdm(np.arange(num_epochs), desc="epochs"):
+		for epoch_index in np.arange(num_epochs):
+		# for epoch_index in tqdm(np.arange(num_epochs), desc="epochs"):
 
 			# run once through the training data and store loss
-			with tqdm(total=total_batches, desc="batches") as progress_bar:
-				for batch_index, batch in enumerate(train_data):
-					_, train_loss, _ = self.session.run(
-						[self.update_weights, self.loss, self.net], feed_dict={
-							self.input_layer: batch.input,
-							self.target: batch.output,
-							self.keep_prob: self.p
-						}
-					)
-					train_losses[batch_index] = train_loss
+			# with tqdm(total=total_batches, desc="batches") as progress_bar:
+			for batch_index, batch in enumerate(train_data):
+				_, train_loss, _ = self.session.run(
+					[self.update_weights, self.loss, self.net], feed_dict={
+						self.input_layer: batch.input,
+						self.target: batch.output,
+						self.keep_prob: self.p
+					}
+				)
+				train_losses[batch_index] = train_loss
 
-					progress_bar.update(1)
-					progress_bar.set_description("batches - train loss: {: 3.4f}".format(train_loss))
+				# progress_bar.update(1)
+				# progress_bar.set_description("batches - train loss: {: 3.4f}".format(train_loss))
 
-				for batch_index, batch in enumerate(val_data):
-					val_loss, _ = self.session.run(
-						[self.loss, self.net], feed_dict={
-							self.input_layer: batch.input,
-							self.target: batch.output,
-							self.keep_prob: 1.0
-						}
-					)
-					val_losses[batch_index] = val_loss
+			for batch_index, batch in enumerate(val_data):
+				val_loss, _ = self.session.run(
+					[self.loss, self.net], feed_dict={
+						self.input_layer: batch.input,
+						self.target: batch.output,
+						self.keep_prob: 1.0
+					}
+				)
+				val_losses[batch_index] = val_loss
 
-					progress_bar.update(1)
-					progress_bar.set_description("batches - val loss: {: 3.4f}".format(val_loss))
+				# progress_bar.update(1)
+				# progress_bar.set_description("batches - val loss: {: 3.4f}".format(val_loss))
 
-				# store the training and val loss
-				statistics[epoch_index, 0] = np.mean(train_losses)
-				statistics[epoch_index, 1] = np.mean(val_losses)
+			# store the training and val loss
+			statistics[epoch_index, 0] = np.mean(train_losses)
+			statistics[epoch_index, 1] = np.mean(val_losses)
 
 		print()
 

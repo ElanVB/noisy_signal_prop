@@ -7,4 +7,5 @@ dependencies:
   - tqdm=4.25.0
   - jupyter=1.0.0
   - nb_conda_kernels=2.1.0
+  - tensorflow-gpu=1.11.0
   # - tensorflow=

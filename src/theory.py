@@ -50,7 +50,7 @@ def qmap_noise(
 		raise ValueError("Specified distribution is not valid.")
 
 	qin = np.atleast_1d(qin)
-	
+
 	def integrand(z):
 		return norm.pdf(z[:, None]) * nonlinearity(np.sqrt(qin[None, :]) * z[:, None])**2
 	def integrand_pois(z):
@@ -98,7 +98,7 @@ def compute_chi2(qstar, weight_sigma=1.0, bias_sigma=0.01, d2phi=np.tanh, hidden
 	def integrand(z):
 		return norm.pdf(z) * d2phi(np.sqrt(qstar) * z)**2
 	integral = quad(integrand, zmin, zmax, epsabs=epsabs, epsrel=epsrel)[0]
-	return  weight_sigma**2 * integral  / hidden_units 
+	return  weight_sigma**2 * integral  / hidden_units
 
 def kappa_map(kappa, chi1, chi2):
 	return 3 * chi2 / chi1**2 + 1/chi1 * kappa
@@ -192,7 +192,7 @@ def depth(dist, sigma, noise_param=None, q_0=1):
         else:
             value = np.finfo("float32").max
 
-        return (np.log10(value) - np.log10(q_0))/np.log10(2*p/sigma)
+        return (np.log10(value) - np.log10(q_0))/np.log10(growth_rate)
     elif isinstance(growth_rate, np.ndarray):
         explode_value = np.finfo("float32").max
         shrink_value = np.finfo("float32").tiny

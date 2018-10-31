@@ -29,11 +29,13 @@ If your machine does not have a GPU, please use `simple_env_cpu.yml` instead. Fu
 
 #### Step 4. Run code in notebooks
 
-Launch jupyter server and run the cells in the notebook corresponding to the Figure in the paper you wish to reproduce (e.g. `Figure_2_deep_noisy_signal_prop.ipynb`).
+Launch jupyter server
 
 ```bash
 jupyter notebook
 ```
+
+and run the cells in the notebook corresponding to the Figure in the paper you wish to reproduce (e.g. `Figure_2_deep_noisy_signal_prop.ipynb`).
 
 ## Steps for larger scale experiments in Figure 6 (GPU required): 
 

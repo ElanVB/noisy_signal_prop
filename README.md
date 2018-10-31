@@ -59,7 +59,7 @@ docker pull ufoym/deepo:tensorflow
 git clone https://github.com/ElanVB/noisy_signal_prop.git
 ```
 
-#### Step 4. Generate experimental results (**Warning: this may take many hours to run.**)
+#### Step 4. Generate experimental results (**Warning: this may take several hours to run.**)
 
 ```bash
 cd noisy_signal_prop/src
@@ -75,7 +75,7 @@ cd ..
 jupyter notebook
 ```
 
-and run the cells in the notebook `Figure_6_depth_scales_mnist_cifar10.ipynb`. To stop the docker container from running simply shutdown the notebook by pressing ctrl+c (the container will automatically be removed once stopped).
+and run the cells in the notebook `Figure_6_depth_scales_mnist_cifar10.ipynb`. 
 
 ### References
 

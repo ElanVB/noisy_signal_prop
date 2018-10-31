@@ -29,7 +29,7 @@ If your machine does not have a GPU, please use `simple_env_cpu.yml` instead. Fu
 
 #### Step 4. Run code in notebooks
 
-Launch jupyter server
+Launch Jupyter server
 
 ```bash
 jupyter notebook
@@ -62,7 +62,7 @@ docker run --runtime=nvidia -v "$(pwd)":/experiment -it ufoym/deepo:tensorflow b
 
 #### Step 5. Run plotting code in the notebook
 
-Launch jupyter server 
+Launch Jupyter server 
 
 ```bash
 cd ..

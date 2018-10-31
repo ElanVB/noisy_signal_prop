@@ -8,7 +8,7 @@ The code was written by Elan Van Biljon, Arnu Pretorius and Herman Kamper. Large
 
 ---
 
-![Alt Text](https://github.com/ElanVB/noisy_signal_prop/blob/master/src/figures/depth_scales.png)
+![Alt Text](https://github.com/ElanVB/noisy_signal_prop/blob/master/src/figures/example_figures-1.png)
 
 ---
 

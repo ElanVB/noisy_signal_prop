@@ -4,12 +4,13 @@
 
 This repository provides the code to reproduce all the results in the paper: "Critical initialisation for deep signal propagation in noisy rectifier neural networks" (NIPS 2018).
 
-Code written by Elan Van Biljon, Arnu Pretorius and Herman Kamper. Large portions of the code was originally adapted from code that was made available in Poole et al. (2016) at https://github.com/ganguli-lab/deepchaos.
+The code was written by Elan Van Biljon, Arnu Pretorius and Herman Kamper. Large portions of the code was originally adapted from code that was made available in Poole et al. (2016) at https://github.com/ganguli-lab/deepchaos.
 
-![Alt Text](https://github.com/ElanVB/noisy_signal_prop/blob/master/src/figures/variance.png)
-![Alt Text](https://github.com/ElanVB/noisy_signal_prop/blob/master/src/figures/correlation.png)
+---
+
 ![Alt Text](https://github.com/ElanVB/noisy_signal_prop/blob/master/src/figures/depth_scales.png)
 
+---
 
 ## Basic steps for Figures 2-5
 

@@ -1,4 +1,4 @@
-name: noisy_signal_prop_test
+name: noisy_signal_prop
 dependencies:
   - python=3.6.6
   - numpy=1.15.1
@@ -8,4 +8,4 @@ dependencies:
   - jupyter=1.0.0
   - nb_conda_kernels=2.1.0
   - tensorflow=1.11.0
-  # - tensorflow=
+  

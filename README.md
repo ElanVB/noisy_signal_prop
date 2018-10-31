@@ -29,6 +29,7 @@ git clone https://github.com/ElanVB/noisy_signal_prop.git
 ```bash
 cd noisy_signal_prop
 conda env create -f environments/simple_env_gpu.yml
+source activate noisy_signal_prop
 ```
 
 If your machine does not have a GPU, please use `simple_env_cpu.yml` instead. Furthermore, full specs can be found in `specific_env.yml`.

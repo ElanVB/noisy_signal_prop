@@ -6,9 +6,9 @@ This repository provides the code to reproduce all the results in the paper: "Cr
 
 Code written by Elan Van Biljon, Arnu Pretorius and Herman Kamper. Large portions of the code was originally adapted from code that was made available in Poole et al. (2016) at https://github.com/ganguli-lab/deepchaos.
 
-![Alt Text](https://github.com/ElanVB/noisy_signal_prop/tree/master/src/figures/vairance-crop.pdf)
-![Alt Text](https://github.com/ElanVB/noisy_signal_prop/tree/master/src/figures/correlation-crop.pdf)
-![Alt Text](https://github.com/ElanVB/noisy_signal_prop/tree/master/src/figures/depth_scale-crop.pdf)
+![Alt Text](https://github.com/ElanVB/noisy_signal_prop/blob/master/src/figures/variance.png)
+![Alt Text](https://github.com/ElanVB/noisy_signal_prop/blob/master/src/figures/correlation.png)
+![Alt Text](https://github.com/ElanVB/noisy_signal_prop/blob/master/src/figures/depth_scales.png)
 
 
 ## Basic steps for Figures 2-5

@@ -1,16 +1,74 @@
-# [Under construction] Critical initialisation for deep signal propagation in noisy rectifier neural networks
+# [Under construction] Code: Critical initialisation for deep signal propagation in noisy rectifier neural networks
 **While all the code necessary to reproduce results in the paper is present, it is not yet in a user friendly state.**
 **Expect this to change soon.**
 
-## Abstract
-Stochastic regularisation is an important weapon in the arsenal of a deep learning practitioner.
-However, despite recent theoretical advances, our understanding of how noise influences signal propagation in deep neural networks remains limited.
-By extending recent work based on mean field theory, we develop a new framework for signal propagation in stochastic regularised neural networks.
-Our noisy signal propagation theory can incorporate several common noise distributions, including additive and multiplicative Gaussian noise as well as dropout.
-We use this framework to investigate initialisation strategies for noisy ReLU networks.
-We show that no critical initialisation strategy exists using additive noise, with signal propagation exploding regardless of the selected noise distribution.
-For multiplicative noise (e.g. dropout), we identify alternative critical initialisation strategies that depend on the second moment of the noise distribution.
-Simulations and experiments on real world data confirm that our proposed initialisation is able to stably propagate signals in deep networks, while using an initialisation disregarding noise fails to do so.
-Furthermore, we analyse correlation dynamics between inputs.
-Stronger noise regularisation is shown to reduce the depth to which discriminatory information about the inputs to a noisy ReLU network is able to propagate, even when initialised at criticality.
-We support our theoretical predictions for these trainable depths with simulations, as well as with experiments on MNIST and CIFAR-10.
+This repository provides the code to reproduce all the results in the paper: "Critical initialisation for deep signal propagation in noisy rectifier neural networks" (NIPS 2018).
+
+Code written by Elan Van Biljon, Arnu Pretorius and Herman Kamper. Large portions of the code was originally adapted from code that was made available in Poole et al. (2016) at https://github.com/ganguli-lab/deepchaos.
+
+## Basic steps for Figures 2-5
+
+To reproduce Figures 2-5 in the paper please follow the steps below.
+
+#### Step 1. Install [Conda](https://conda.io/docs/user-guide/install/index.html).
+
+#### Step 2. Clone the research code repository. 
+
+```bash
+git clone https://github.com/ElanVB/noisy_signal_prop.git
+```
+
+#### Step 3. Activate the environment
+
+```bash
+cd noisy_signal_prop
+conda env create -f environments/simple_env_gpu.yml
+```
+
+If your machine does not have a GPU, please use `simple_env_cpu.yml` instead. Furthermore, full specs can be found in `specific_env.yml`.
+
+#### Step 4. Run code in notebooks
+
+Launch jupyter server and run the cells in the notebook corresponding to the Figure in the paper you wish to reproduce (e.g. `Figure_2_deep_noisy_signal_prop.ipynb`).
+
+```bash
+jupyter notebook
+```
+
+## Steps for larger scale experiments in Figure 6 (GPU required): 
+
+Below are the instructions to reproduce the plots in Figure 6 using a docker image and the notebook provided.
+
+#### Step 1. Install [Docker](https://docs.docker.com/engine/installation/) and [nvidia-docker](https://github.com/NVIDIA/nvidia-docker).
+
+#### Step 2. Obtain the research environment image from [Docker Hub](https://hub.docker.com/r/ufoym/deepo/).
+
+```bash
+docker pull ufoym/deepo:tensorflow
+```
+#### Step 3. Clone the research code repository. 
+```bash
+git clone https://github.com/ElanVB/noisy_signal_prop.git
+```
+
+#### Step 4. Generate experimental results (**Warning: this may take many hours to run.**)
+
+```bash
+cd noisy_signal_prop/src
+docker run --runtime=nvidia -v "$(pwd)":/experiment -it ufoym/deepo:tensorflow bash experiment/start.sh
+```
+
+#### Step 5. Run plotting code in the notebook
+
+Launch jupyter server 
+
+```bash
+cd ..
+jupyter notebook
+```
+
+and run the cells in the notebook `Figure_6_depth_scales_mnist_cifar10.ipynb`. To stop the docker container from running simply shutdown the notebook by pressing ctrl+c (the container will automatically be removed once stopped).
+
+### References
+
+B. Poole, S. Lahiri, M. Raghu, J. Sohl-Dickstein, and S. Ganguli. Exponential expressivity in deep neural networks through transient chaos. Neural Information Processing Systems, 2016.

@@ -1,6 +1,4 @@
-# [Under construction] Code: Critical initialisation for deep signal propagation in noisy rectifier neural networks
-**While all the code necessary to reproduce results in the paper is present, it is not yet in a user friendly state.**
-**Expect this to change soon.**
+# Code: Critical initialisation for deep signal propagation in noisy rectifier neural networks
 
 This repository provides the code to reproduce all the results in the paper: "Critical initialisation for deep signal propagation in noisy rectifier neural networks" (NIPS 2018).
 
@@ -81,3 +79,8 @@ and run the cells in the notebook `Figure_6_depth_scales_mnist_cifar10.ipynb`.
 ### References
 
 B. Poole, S. Lahiri, M. Raghu, J. Sohl-Dickstein, and S. Ganguli. Exponential expressivity in deep neural networks through transient chaos. Neural Information Processing Systems, 2016.
+
+### NOTE
+
+**This repository is still under construction, while all the code necessary to reproduce results in the paper is present, much of the supporting code for the notebooks is not yet in a user friendly state.**
+**Expect this to change soon.** 

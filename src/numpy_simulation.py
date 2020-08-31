@@ -157,7 +157,7 @@ def multi_layer_net_statistics(
 	n_hidden_units = 1000
 	din = 1000
 
-	print(nonlinearity)
+	# print(nonlinearity)
 
 	theory = np.empty((n_hidden_layers+1,))
 	theory[0] = input_length
@@ -643,7 +643,8 @@ def mu_2(dist=None, std=None, prob_1=None): #std=None, prob_1=None):
 		raise TypeError("dist must be a string")
 
 
-def noisy_signal_prop_simulations(dist=None, noise=None, act=None, init=None, replace=True, seed=None):
+def noisy_signal_prop_simulations(dist=None, noise=None, act=None, init=None, replace=False, seed=None):
+# def noisy_signal_prop_simulations(dist=None, noise=None, act=None, init=None, replace=True, seed=None):
 	####################################################################################################
 	# Is this a good way to set a random seed?
 	####################################################################################################
@@ -692,7 +693,7 @@ def noisy_signal_prop_simulations(dist=None, noise=None, act=None, init=None, re
 		weight_sigmas = [np.sqrt(2)]
 
 	global results_dir
-	results_dir = os.path.join(file_dir, "results", dist, act, init)
+	results_dir = os.path.join(file_dir, "../results", dist, act, init)
 	if not os.path.exists(results_dir):
 		os.makedirs(results_dir, exist_ok=True)
 

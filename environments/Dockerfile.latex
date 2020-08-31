@@ -1,0 +1,19 @@
+# built with `docker build -t signal_prop:latex -f Dockerfile.latex .`
+
+FROM signal_prop:plot
+
+# fetch repo / ppa packages, etc
+RUN apt-get update -y --fix-missing
+# RUN apt-get update --fix-missing
+
+# install LaTeX
+# RUN apt-get install -y texlive-latex-recommended
+RUN apt-get install -y dvipng
+RUN apt-get install -y cm-super
+RUN apt-get install -y texlive-latex-extra
+RUN apt-get install -y texlive-fonts-recommended
+# RUN apt-get install -y texlive-science
+# RUN apt-get install texlive-science
+# RUN apt-get install texlive
+
+CMD ["bash"]

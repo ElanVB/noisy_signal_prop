@@ -385,9 +385,9 @@ def plot_variance():
                 for init in attr["inits"]:
                     dashes = (None, None)
                     if "under" in init:
-                        shade_i = 4
+                        shade_i = 2
                     elif "crit" in init:
-                        shade_i = 5
+                        shade_i = 4
                         dashes = (24, 12) if dist['dist'] == "bern" else (None, None)
                     else:
                         shade_i = 6
@@ -519,11 +519,7 @@ def plot_variance():
     )
 
     fig.text(0.02, 0.95, "(a)")
-    # fig.text(0.02, 0.95, "(a)", fontsize=20)
     fig.text(0.52, 0.95, "(b)")
-    # fig.text(0.35, 0.95, "(b)", fontsize=20)
-    # fig.text(0.68, 0.95, "(c)")
-    # fig.text(0.68, 0.95, "(c)", fontsize=20)
 
     plt.gcf().tight_layout()
     plt.savefig(os.path.join(figures_dir, "vairance.pdf"), bbox_inches='tight')
@@ -605,13 +601,13 @@ def plot_correlation():
                 if float(dist['prob_1']) < 0.7:
                     shade_i = 6
                 else:
-                    shade_i = 4
+                    shade_i = 2
 
             elif "gauss" in dist['dist']:
                 col_i = 3
 
                 if float(dist['std']) < 0.5:
-                    shade_i = 4
+                    shade_i = 2
                 else:
                     shade_i = 6
 
@@ -629,21 +625,46 @@ def plot_correlation():
                     num_trials = cmap_sim_input.shape[0]
                     num_networks = cmap_sim_output.shape[0] // num_trials
 
+                    crange = np.linspace(0, 1.0, 51)
+
                     # create label
                     label = ""
 
-                    try:
-                        label = "Mult Gauss ($\sigma_\epsilon = {}$) ".format(str(dist['std']))
-                    except:
-                        try:
-                            label ="dropout ($p = {}$)".format(str(dist['prob_1']))
-                        except:
-                            label = dist['dist']
+                    x = crange[-1] - 0.03
+                    y = cmaps[0, 0, -10] - 0.015
+                    if "std" in dist:
+                        label = "Mult Gauss"
+
+                        ax1.text(
+                            x, y, f"($\sigma_\epsilon = {dist['std']}$)",
+                            horizontalalignment='right',
+                            verticalalignment='top',
+                        )
+                        # ax1.text(x, y, r"($\sigma_\epsilon = {})".format(dist['std']))
+                    elif "prob_1" in dist:
+                        label = "dropout"
+
+                        ax1.text(
+                            x, y, f"($p = {dist['prob_1']}$)",
+                            horizontalalignment='right',
+                            verticalalignment='top',
+                        )
+                    else:
+                        label = dist["dist"]
+
+                    # try:
+                    #     label = "Mult Gauss ($\sigma_\epsilon = {}$) ".format(str(dist['std']))
+                    #     label = "Mult Gauss"
+                    # except:
+                    #     try:
+                    #         label ="dropout ($p = {}$)".format(str(dist['prob_1']))
+                    #         label = "dropout"
+                    #     except:
+                    #         label = dist['dist']
 
                     ############################################################
                     # left - Correlation map
                     ############################################################
-                    crange = np.linspace(0, 1.0, 51)
 
                     # Theory
                     ax1.plot(crange, cmaps[0, 0], c=pal[col_i][shade_i], label=label)
@@ -674,9 +695,24 @@ def plot_correlation():
                     for j in range(correlations.shape[0]):
                         ax2.plot(ctrajs[0, 0, j, :].T, c=pal[col_i][shade_i])
 
-
                     # Simulations
                     x_axis = np.arange(0, correlations.shape[-1])
+
+                    x = x_axis[-1] - 1
+                    y = ctrajs[0, 0, 0, -1] + 0.1
+                    if "std" in dist:
+                        ax2.text(
+                            x, y, f"($\sigma_\epsilon = {dist['std']}$)",
+                            horizontalalignment='right',
+                            verticalalignment='top',
+                        )
+                        # ax2.text(x, y, r"($\sigma_\epsilon = {})".format(dist['std']))
+                    elif "prob_1" in dist:
+                        ax2.text(
+                            x, y, f"($p = {dist['prob_1']}$)",
+                            horizontalalignment='right',
+                            verticalalignment='top',
+                        )
 
                     means = correlations.mean(axis=-2).mean(axis=-2)
                     std = correlations.mean(axis=-2).std(axis=-2)
@@ -740,13 +776,8 @@ def plot_correlation():
         final_handles, final_labels, loc='lower center', ncol=3, bbox_to_anchor=(0.5,-0.1)
     )
 
-    fig.text(0.03, 0.95, "(a)")
-    # fig.text(0.03, 0.95, "(a)", fontsize=20)
+    fig.text(0.02, 0.95, "(a)")
     fig.text(0.52, 0.95, "(b)")
-    # fig.text(0.35, 0.95, "(b)")
-    # fig.text(0.35, 0.95, "(b)", fontsize=20)
-    # fig.text(0.68, 0.95, "(c)")
-    # fig.text(0.68, 0.95, "(c)", fontsize=20)
 
     plt.gcf().tight_layout()
     plt.savefig(os.path.join(figures_dir, "correlation.pdf"), bbox_inches='tight')
@@ -791,6 +822,166 @@ def plot_correlation_edge_theory():
 
     plt.gcf().tight_layout()
     plt.savefig(os.path.join(figures_dir, "correlation_edge_theory.pdf"), bbox_inches='tight')
+
+def plot_rate_of_convergence(data):
+    fig, [ax1, ax2] = plt.subplots(1, 2, figsize=(8, 3))
+
+    for ax, (noise_type, results) in zip([ax1, ax2], data.items()):
+        for noise_label, colour, theory, imperical in zip(
+            results["noise"],
+            results["colours"],
+            results["convergence_theory"],
+            results["convergence_imperical"],
+        ):
+            ax.plot(theory, color=colour)
+            ax.plot(imperical, color=colour, marker="o", linestyle="")
+
+        ax.set_yscale('log')
+        ax.set_ylabel(r'$|c^l - c^*|$')
+        ax.set_xlabel('Layer ($l$)')
+        ax.set_title(noise_type)
+
+    fig.suptitle("Rate of convergence to fixed point")
+    # fig.legend(...)
+
+    ##############
+    # add labels #
+    ##############
+    fig.text(0.02, 0.87, "(a)")
+    fig.text(0.52, 0.87, "(b)")
+
+    plt.gcf().tight_layout()
+    plt.savefig(os.path.join(figures_dir, "correlation_rate_of_convergence.pdf"), bbox_inches='tight')
+
+def plot_theoretical_vs_measured_depth_scale(data):
+    fig, [ax1, ax2] = plt.subplots(1, 2, figsize=(8, 3))
+
+    for ax, (noise_type, results) in zip([ax1, ax2], data.items()):
+        # plot theory
+        ax.plot(results["mu"], results["xi_theory"], color=results["colour"])
+
+        # plot empirical results
+        ax.plot(results["mu"], results["xi_imperical"], color=results["colour"], marker="o", linestyle="")
+
+        ax.set_ylabel(r'$\xi_c$')
+        ax.set_xlabel(r'$\mu_2$')
+        ax.set_title(noise_type)
+
+    fig.suptitle("Depth scales")
+    # fig.legend(...)
+
+    ##############
+    # add labels #
+    ##############
+    fig.text(0.02, 0.87, "(a)")
+    fig.text(0.52, 0.87, "(b)")
+
+    plt.gcf().tight_layout()
+    plt.savefig(os.path.join(figures_dir, "correlation_depth_scale.pdf"), bbox_inches='tight')
+
+def load_and_process_correlation_convergence(tests):
+    mu2s = []
+    noises = []
+    c_stars = []
+    inferred_xi = []
+    depth_colour = None
+    convergence_colours = []
+    imperical_convergence = []
+    theoretical_convergence = []
+
+    pal = pal = get_colours(4, 13)
+
+    test_data = []
+    for i, test in enumerate(tests):
+        test_data.append(load_experiment(test,
+                                        ["multi_layer_cmap_sim", "cmap", "ctrajs", "chi1", "cmap_sim"], results_dir))
+
+    for i, (test, attr) in enumerate(zip(test_data, tests)):
+        for dist in attr["distributions"]:
+            if dist['dist'] == "none":
+                raise ValueError("There should not be tests with no noise in this section")
+
+            elif dist['dist'] == "bern":
+                col_i = 1
+                depth_colour = pal[col_i, 12]
+                shade_i = int((10 - i)/10 * 12)
+                mu2s.append(1/float(dist['prob_1']))
+                noises.append(f"($p = {dist['prob_1']}$)")
+                convergence_colours.append(pal[col_i, shade_i])
+
+            elif "gauss" in dist['dist']:
+                col_i = 3
+                shade_i = i
+                depth_colour = pal[col_i, 12]
+                mu2s.append(float(dist['std'])**2 + 1)
+                noises.append(f"($\sigma_\epsilon = {dist['std']}$)")
+                convergence_colours.append(pal[col_i, shade_i])
+
+            for act in attr["activations"]:
+                for init in attr["inits"]:
+
+                    correlations = test[dist['dist']][act][init]['multi_layer_cmap_sim']
+                    ctrajs = test[dist['dist']][act][init]['ctrajs']
+
+                    c_stars.append(correlations.mean(axis=(0, 1, 2))[-1])
+                    rate_trajectories = np.abs(ctrajs - ctrajs[:, :, :, -1, np.newaxis]).mean(axis=(0, 1))
+
+                    xi_array = []
+                    rates_array = []
+                    theory_array = []
+
+                    for rates in rate_trajectories:
+                        # mask zero values so that they don't break the plot
+                        non_zero_rates = rates != 0
+
+                        # get a axis that corresponds to the non-zero elements
+                        x = np.arange(rates.shape[0])
+                        z, b = np.polyfit(x[non_zero_rates], np.log(rates[non_zero_rates]), 1)
+                        theory = np.exp(x*z + b)
+
+                        xi_array.append(-1/z)
+                        rates_array.append(rates)
+                        theory_array.append(theory)
+
+                    inferred_xi.append(np.mean(xi_array))
+                    imperical_convergence.append(np.mean(rates_array, axis=0))
+                    theoretical_convergence.append(np.mean(theory_array, axis=0))
+
+    mu2s = np.array(mu2s)
+    c_stars = np.array(c_stars)
+    inferred_xi = np.array(inferred_xi)
+    imperical_convergence = np.array(imperical_convergence)
+    theoretical_convergence = np.array(theoretical_convergence)
+
+    # mask zero values in imperical convergence because it ruins the plot
+    zeros = imperical_convergence == 0
+    imperical_convergence = np.ma.array(imperical_convergence, mask=zeros)
+    theoretical_convergence = np.ma.array(theoretical_convergence, mask=zeros)
+
+    # compare theory depth scales with inferred ones from simulations
+    xi_c = -1/np.log(np.arcsin(c_stars)/(np.pi*mu2s) + 1/(2*mu2s))
+
+    index_order = np.argsort(mu2s)
+
+    mu2s_line = mu2s[index_order]
+    xi_c_line = xi_c[index_order]
+    inf_xi_line = inferred_xi[index_order]
+
+    return {
+        "convergence": {
+            "noise": noises,
+            "colours": convergence_colours,
+            "convergence_theory": theoretical_convergence,
+            "convergence_imperical": imperical_convergence
+        },
+        "depth_scale": {
+            "mu": mu2s_line,
+            "c_stars": c_stars,
+            "colour": depth_colour,
+            "xi_theory": xi_c_line,
+            "xi_imperical": inf_xi_line,
+        }
+    }
 
 def plot_fixed_point_convergence():
     dropout_tests = [{
@@ -885,149 +1076,22 @@ def plot_fixed_point_convergence():
         "inits": ["crit"]
     }]
 
-    # fig = plt.figure()
-    fig = plt.figure(figsize=(11.25, 7.5))
-    # fig = plt.figure(figsize=(15, 10))
-    plt.subplots_adjust(hspace=0.4)
-    pal = get_colours(4, 13)
-    gs = plt.GridSpec(2, 2)
-    ax4 = plt.subplot(gs[0, 0])
-    ax5 = plt.subplot(gs[0, 1])
-    ax1 = plt.subplot(gs[1, 0])
-    ax2 = plt.subplot(gs[1, 1])
+    # process the data and pass it to the plotting functions
+    dropout_data = load_and_process_correlation_convergence(dropout_tests)
+    gauss_data = load_and_process_correlation_convergence(gauss_tests)
 
-    def plots(ax4, ax5, tests):
-        cols_shades = []
+    convergence_data = {
+        "Bernoulli": dropout_data["convergence"],
+        "Gaussian": gauss_data["convergence"]
+    }
 
-        c_stars = []
-        mu2s = []
-        inferred_xi = [[], [], []]
+    depth_scale_data = {
+        "Bernoulli": dropout_data["depth_scale"],
+        "Gaussian": gauss_data["depth_scale"]
+    }
 
-        test_data = []
-        for i, test in enumerate(tests):
-            test_data.append(load_experiment(test,
-                                            ["multi_layer_cmap_sim", "cmap", "ctrajs", "chi1", "cmap_sim"], results_dir))
-
-        for i, (test, attr) in enumerate(zip(test_data, tests)):
-            for dist in attr["distributions"]:
-                if dist['dist'] == "none":
-                    col_i = 0
-                    shade_i = 6
-                elif dist['dist'] == "bern":
-                    col_i = 1
-                    mu2s.append(1/float(dist['prob_1']))
-                    shade_i = int((10 - i)/10 * 12)
-
-                elif "gauss" in dist['dist']:
-                    col_i = 3
-                    mu2s.append(float(dist['std'])**2 + 1)
-                    shade_i = i
-
-                cols_shades.append([col_i, shade_i])
-
-                for act in attr["activations"]:
-                    for init in attr["inits"]:
-                        correlations = test[dist['dist']][act][init]['multi_layer_cmap_sim']
-                        cmap_data = test[dist['dist']][act][init]['cmap']
-                        cmaps = cmap_data["cmaps"]
-                        cstars = cmap_data["cstars"]
-                        ctrajs = test[dist['dist']][act][init]['ctrajs']
-                        cmap_sim_data = test[dist['dist']][act][init]['cmap_sim']
-                        cmap_sim_input = cmap_sim_data["input_correlations"]
-                        cmap_sim_output = cmap_sim_data["output_correlations"]
-
-                        c_stars.append(correlations.mean(axis=-2).mean(axis=-2).mean(axis=0)[-1])
-
-
-                        for i in range(3):
-                            # plot rates of convergence
-                            rates = np.abs(ctrajs[0, 0, i, :].T - ctrajs[0, 0, i, -1])
-
-                            # mask zero values so that they don't break the plot
-                            rates = np.ma.array(rates, mask=(rates == 0))
-
-                            if i == 0:
-                                if shade_i == 12:
-                                    label = "Simulation"
-                                else:
-                                    label = ""
-
-                                ax4.plot(rates, c=pal[col_i][shade_i], label=label)
-                                # ax4.plot(rates, c=pal[col_i][shade_i], linewidth=3.0, label=label)
-
-                            # get a axis that corresponds to the non-zero elements
-                            non_masked = np.array(np.ma.getmask(rates) ^ 1, dtype=bool)
-                            x = np.arange(rates.shape[0])[non_masked]
-
-                            z, b = np.polyfit(x, np.log(rates[x]), 1)
-                            return_value = np.polyfit(x, np.log(rates[x]), 1)
-
-                            if i == 0:
-                                if shade_i == 12:
-                                    label = "Linear fit"
-                                else:
-                                    label = ""
-
-                                ax4.plot(x, np.exp(x*z + b), c=pal[2][shade_i], linestyle="--", dashes=(5, 5), label=label)
-                                # ax4.plot(x, np.exp(x*z + b), c=pal[2][shade_i], linestyle="--", dashes=(5, 5), linewidth=3.0, label=label)
-
-                            inferred_xi[i].append(-1/z)
-
-        ax4.set_yscale('log')
-
-        c_stars = np.array(c_stars)
-        mu2s = np.array(mu2s)
-        inferred_xi = np.array(inferred_xi).mean(axis=0)
-
-        # compare theory depth scales with inferred ones from simulations
-        xi_c = -1/np.log(np.arcsin(c_stars)/(np.pi*mu2s) + 1/(2*mu2s))
-
-        for col_shade, mu2, xi, inf_xi in zip(cols_shades, mu2s, xi_c, inferred_xi):
-            col = col_shade[0]
-            shade = col_shade[1]
-            ax5.plot(mu2, xi, 'ro', c='purple', alpha=0.6)
-            # ax5.plot(mu2, xi, 'ro', c='purple', alpha=0.6, markersize=10)
-            ax5.plot(mu2, inf_xi, 'ro', c=pal[col][shade], alpha=0.6)
-            # ax5.plot(mu2, inf_xi, 'ro', c=pal[col][shade], alpha=0.6, markersize=10)
-
-        mu2s_line = np.sort(mu2s)
-        xi_c_line = np.flip(np.sort(xi_c), axis=0)
-        inf_xi_line = np.flip(np.sort(inferred_xi))
-        ax5.plot(mu2s_line, xi_c_line, label='Theory', c='purple')
-        # ax5.plot(mu2s_line, xi_c_line, label='Theory', c='purple', linewidth=3.0)
-        ax5.plot(mu2s_line, inf_xi_line, linestyle='--', dashes=(5, 5), label='Simulation', c='orange')
-        # ax5.plot(mu2s_line, inf_xi_line, linestyle='--', dashes=(5, 5), label='Simulation', c='orange', linewidth=3.0)
-
-        ax4.legend(loc=1)
-        # ax4.legend(loc=1, prop={'size': 12})
-        # ax5.legend(prop={'size': 12})
-
-    plots(ax4=ax4, ax5=ax5, tests=dropout_tests)
-    plots(ax4=ax1, ax5=ax2, tests=gauss_tests)
-
-    ax4.set_ylabel(r'$|c^l - c^*|$')
-    ax1.set_ylabel(r'$|c^l - c^*|$')
-    ax1.set_xlabel('Layer ($l$)')
-    ax4.set_title('Rate of convergence to fixed point')
-    ax2.set_ylabel(r'$\xi_c$')
-    ax5.set_ylabel(r'$\xi_c$')
-    ax2.set_xlabel(r'$\mu_2$')
-    ax5.set_title("Two input depth scales")
-
-    ##############
-    # add labels #
-    ##############
-    fig.text(0.04, 0.96, "(a)")
-    # fig.text(0.04, 0.96, "(a)", fontsize=20)
-    fig.text(0.53, 0.96, "(b)")
-    # fig.text(0.53, 0.96, "(b)", fontsize=20)
-    fig.text(0.04, 0.5, "(c)")
-    # fig.text(0.04, 0.5, "(c)", fontsize=20)
-    fig.text(0.53, 0.5, "(d)")
-    # fig.text(0.53, 0.5, "(d)", fontsize=20)
-
-    plt.gcf().tight_layout()
-    plt.savefig(os.path.join(figures_dir, "fixed_point_convergence.pdf"), bbox_inches='tight')
+    plot_rate_of_convergence(convergence_data)
+    plot_theoretical_vs_measured_depth_scale(depth_scale_data)
 
 def plot_depth_scales():
     shading = "gouraud"
@@ -1220,10 +1284,10 @@ if __name__ == "__main__":
     figures_dir = os.path.join(file_dir, "../figures")
     os.makedirs(figures_dir, exist_ok=True)
 
-    plot_tanh()
+    # plot_tanh()
     # plot_variance()
     # plot_variance_edge()
-    plot_correlation()
-    plot_correlation_edge_theory()
+    # plot_correlation()
+    # plot_correlation_edge_theory()
     # plot_fixed_point_convergence()
-    # plot_depth_scales()
+    plot_depth_scales()

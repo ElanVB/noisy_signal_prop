@@ -212,18 +212,18 @@ def plot_tanh():
 
                 if dist['dist'] == "none":
                     if act == "tanh":
-                        label = "tanh - None"
+                        label = "Tanh - none"
                         col_i = 0
                     else:
-                        label = "ReLU - None"
+                        label = "ReLU - none"
                         col_i = 2
 
                 elif "gauss" in dist['dist']:
                     if act == "tanh":
-                        label = "tanh - Add Gauss $(\sigma^2_\epsilon = $ " + str(dist['std']) + ")"
+                        label = "Tanh - add Gauss $(\sigma^2_\epsilon = $ " + str(dist['std']) + ")"
                         col_i = 1
                     else:
-                        label = "ReLU - Add Gauss $(\sigma^2_\epsilon = $ " + str(dist['std']) + ")"
+                        label = "ReLU - add Gauss $(\sigma^2_\epsilon = $ " + str(dist['std']) + ")"
                         col_i = 3
 
                 for init in attr["inits"]:
@@ -291,6 +291,43 @@ def plot_tanh():
     plt.gcf().tight_layout()
     plt.savefig(os.path.join(figures_dir, "tanh.pdf"), bbox_inches='tight')
     # plt.savefig("tanh.pdf", dpi=200)
+
+def shared_legend(fig, ncol=3):
+    handles_labels = [ax.get_legend_handles_labels() for ax in fig.axes]
+    handles, labels = [sum(lol, []) for lol in zip(*handles_labels)]
+
+    # remove clutter from legend elements:
+    #   * gather lines by label
+    #   * keep the darkest line within each group
+    #       (the darkest line is the one with the smallest sum of its elements)
+    dup_labels = {}
+    for index, label in enumerate(labels):
+        if label in dup_labels:
+            dup_labels[label].append(index)
+        else:
+            dup_labels[label] = [index,]
+
+    final_labels = []
+    final_handles = []
+    for label, indices in dup_labels.items():
+        min_index = indices[0]
+
+        if len(indices) > 1:
+            min_shade = np.inf
+
+            for index in indices:
+                shade = np.sum(handles[index].get_color())
+
+                if shade < min_shade:
+                    min_index = index
+                    min_shade = shade
+
+        final_labels.append(labels[min_index])
+        final_handles.append(handles[min_index])
+
+    fig.legend(
+        final_handles, final_labels, loc='lower center', ncol=ncol, bbox_to_anchor=(0.5, -0.1)
+    )
 
 def plot_variance():
     # Dictionary for data that needs to be extracted
@@ -376,7 +413,7 @@ def plot_variance():
                 col_i = 0
             elif dist['dist'] == "bern":
                 col_i = 1
-                label = "dropout"
+                label = "Dropout"
             elif "gauss" in dist['dist']:
                 col_i = 3
                 label = "Mult Gauss"
@@ -428,7 +465,7 @@ def plot_variance():
                         std = multi_layer_sims[w, b].mean(axis=-1).std(axis=0)
 
                         # plot theory
-                        if "dropout" in label and not bern_label:
+                        if "Dropout" in label and not bern_label:
                             bern_label = True
                             ax2.plot(multi_layer_theory, c=pal[col_i][shade_i], label=label)
                         elif "Gauss" in label and not gauss_label:
@@ -482,41 +519,7 @@ def plot_variance():
     # for legobj in leg.legendHandles:
     #     legobj.set_linewidth(3.0)
 
-    handles_labels = [ax.get_legend_handles_labels() for ax in fig.axes]
-    handles, labels = [sum(lol, []) for lol in zip(*handles_labels)]
-
-    # remove clutter from legend elements:
-    #   * gather lines by label
-    #   * keep the darkest line within each group
-    #       (the darkest line is the one with the smallest sum of its elements)
-    dup_labels = {}
-    for index, label in enumerate(labels):
-        if label in dup_labels:
-            dup_labels[label].append(index)
-        else:
-            dup_labels[label] = [index,]
-
-    final_labels = []
-    final_handles = []
-    for label, indices in dup_labels.items():
-        min_index = indices[0]
-
-        if len(indices) > 1:
-            min_shade = np.inf
-
-            for index in indices:
-                shade = np.sum(handles[index].get_color())
-
-                if shade < min_shade:
-                    min_index = index
-                    min_shade = shade
-
-        final_labels.append(labels[min_index])
-        final_handles.append(handles[min_index])
-
-    fig.legend(
-        final_handles, final_labels, loc='lower center', ncol=3, bbox_to_anchor=(0.5,-0.1)
-    )
+    shared_legend(fig)
 
     fig.text(0.02, 0.95, "(a)")
     fig.text(0.52, 0.95, "(b)")
@@ -642,7 +645,7 @@ def plot_correlation():
                         )
                         # ax1.text(x, y, r"($\sigma_\epsilon = {})".format(dist['std']))
                     elif "prob_1" in dist:
-                        label = "dropout"
+                        label = "Dropout"
 
                         ax1.text(
                             x, y, f"($p = {dist['prob_1']}$)",
@@ -650,7 +653,7 @@ def plot_correlation():
                             verticalalignment='top',
                         )
                     else:
-                        label = dist["dist"]
+                        label = "None"
 
                     # try:
                     #     label = "Mult Gauss ($\sigma_\epsilon = {}$) ".format(str(dist['std']))
@@ -740,41 +743,7 @@ def plot_correlation():
     ax2.set_ylim(0, 1)
     ax2.set_xlim(0, correlations.shape[-1] - 1)
 
-    handles_labels = [ax.get_legend_handles_labels() for ax in fig.axes]
-    handles, labels = [sum(lol, []) for lol in zip(*handles_labels)]
-
-    # remove clutter from legend elements:
-    #   * gather lines by label
-    #   * keep the darkest line within each group
-    #       (the darkest line is the one with the smallest sum of its elements)
-    dup_labels = {}
-    for index, label in enumerate(labels):
-        if label in dup_labels:
-            dup_labels[label].append(index)
-        else:
-            dup_labels[label] = [index,]
-
-    final_labels = []
-    final_handles = []
-    for label, indices in dup_labels.items():
-        min_index = indices[0]
-
-        if len(indices) > 1:
-            min_shade = np.inf
-
-            for index in indices:
-                shade = np.sum(handles[index].get_color())
-
-                if shade < min_shade:
-                    min_index = index
-                    min_shade = shade
-
-        final_labels.append(labels[min_index])
-        final_handles.append(handles[min_index])
-
-    fig.legend(
-        final_handles, final_labels, loc='lower center', ncol=3, bbox_to_anchor=(0.5,-0.1)
-    )
+    shared_legend(fig)
 
     fig.text(0.02, 0.95, "(a)")
     fig.text(0.52, 0.95, "(b)")
@@ -803,7 +772,7 @@ def plot_correlation_edge_theory():
     ax3.plot(mu2s, fp_slopes, c='purple', label="Critical")
     ax3.set_xlabel(r"Second moment of noise distribution ($\mu_2$)")
     ax3.set_ylabel(r"Slope at fixed point ($\chi (c^*)$)")
-    ax3.scatter(1, 1, c="red", marker='*', s=10, label='Edge of chaos')
+    ax3.scatter(1, 1, c="red", marker='*', s=100, label='Edge of chaos')
     # ax3.scatter(1, 1, c="red", marker='*', label='Edge of chaos')
     # ax3.scatter(1, 1, c="red", marker='*', label='Edge of chaos', s=100)
     ax3.fill_between(mu2s, 0, 1, facecolor='cyan', alpha=0.2)
@@ -847,8 +816,8 @@ def plot_rate_of_convergence(data):
     ##############
     # add labels #
     ##############
-    fig.text(0.02, 0.87, "(a)")
-    fig.text(0.52, 0.87, "(b)")
+    fig.text(0.02, 0.85, "(a)")
+    fig.text(0.52, 0.85, "(b)")
 
     plt.gcf().tight_layout()
     plt.savefig(os.path.join(figures_dir, "correlation_rate_of_convergence.pdf"), bbox_inches='tight')
@@ -873,8 +842,8 @@ def plot_theoretical_vs_measured_depth_scale(data):
     ##############
     # add labels #
     ##############
-    fig.text(0.02, 0.87, "(a)")
-    fig.text(0.52, 0.87, "(b)")
+    fig.text(0.02, 0.85, "(a)")
+    fig.text(0.52, 0.85, "(b)")
 
     plt.gcf().tight_layout()
     plt.savefig(os.path.join(figures_dir, "correlation_depth_scale.pdf"), bbox_inches='tight')
@@ -976,7 +945,6 @@ def load_and_process_correlation_convergence(tests):
         },
         "depth_scale": {
             "mu": mu2s_line,
-            "c_stars": c_stars,
             "colour": depth_colour,
             "xi_theory": xi_c_line,
             "xi_imperical": inf_xi_line,
@@ -1081,197 +1049,212 @@ def plot_fixed_point_convergence():
     gauss_data = load_and_process_correlation_convergence(gauss_tests)
 
     convergence_data = {
-        "Bernoulli": dropout_data["convergence"],
+        "Dropout": dropout_data["convergence"],
         "Gaussian": gauss_data["convergence"]
     }
 
     depth_scale_data = {
-        "Bernoulli": dropout_data["depth_scale"],
+        "Dropout": dropout_data["depth_scale"],
         "Gaussian": gauss_data["depth_scale"]
     }
 
     plot_rate_of_convergence(convergence_data)
     plot_theoretical_vs_measured_depth_scale(depth_scale_data)
 
-def plot_depth_scales():
-    shading = "gouraud"
+def plot_variance_depth_scale(data, shading="gouraud"):
+    fig, [ax1, ax2] = plt.subplots(1, 2, figsize=(8, 3))
 
-    rates = np.linspace(0.1, 1, 100)
-    mu2s = 1/rates
-    fps = []
-    fp_slopes = []
-    for p in rates:
-        mu2 = 1/p
-        fpoint = fixed_point(c_map, p, p*2, mu2)
-        fps.append(fpoint)
+    for ax, (dataset, results) in zip([ax1, ax2], data.items()):
+        init_axis = results["imperical"]["init_axis"]
+        depth_axis = results["imperical"]["depth_axis"]
+        variance = results["imperical"]["variance"]
+        init_axis_theory = results["theory"]["init_axis"]
+        max_depth = results["theory"]["max_depth"]
+        critical = results["theory"]["critical"]
+        num_layers = results["imperical"]["num_layers"]
 
-        slope = c_map_slope(fpoint, p*2)
-        fp_slopes.append(slope)
-
-    # fig, [[ax1, ax2, ax3], [ax4, ax5, ax6]] = plt.subplots(2, 3)
-    fig, [[ax1, ax2, ax3], [ax4, ax5, ax6]] = plt.subplots(2, 3, figsize=(18.25, 7.5))
-    # fig, [[ax1, ax2, ax3], [ax4, ax5, ax6]] = plt.subplots(2, 3, figsize=(23, 10))
-
-    for dataset, [ax1, ax2, ax3] in zip(["mnist", "cifar-10"], [[ax1, ax2, ax3], [ax4, ax5, ax6]]):
-
-        ###############################
-        # Variance propagation dynamics
-        ###############################
-        dataset_dir_name = dataset.replace("-", "")
-        variance_path = os.path.join(results_dir, "variance_depth", dataset_dir_name)
-        trainable_path = os.path.join(results_dir, "trainable_depth", dataset_dir_name)
-        example_dict = np.load(os.path.join(variance_path, "variance_depth.npy"))
-        inits = np.load(os.path.join(variance_path, "variance_depth_sigma.npy"))
-        p = 0.6
-        num_layers = 1000
-        nets = np.linspace(10, num_layers, 1000, dtype=int)
-        xv, yv = np.meshgrid(nets, inits, sparse=False, indexing='ij')
-
-        Z1 = np.log(np.array(example_dict))
-
-        bad_indices = np.isnan(Z1) + np.isinf(Z1)
-        Z1 = np.ma.array(Z1, mask=bad_indices)
         cmap = mpl.cm.get_cmap(name="Spectral_r")
         cmap.set_bad('black')
 
-        pcm = ax1.pcolormesh(yv, xv, Z1.T, cmap=cmap, shading=shading, linewidth=0)
-        cbar = fig.colorbar(pcm, ax=ax1, extend='max')
+        pcm = ax.pcolormesh(init_axis, depth_axis, variance.T, cmap=cmap, shading=shading, linewidth=0)
+        ax.plot(init_axis_theory, max_depth, label="Theoretical maximum depth", c='cyan')
+        ax.plot([critical,]*2, [0, num_layers], color="black", linestyle="--", label="Criticality", dashes=(2, 2))
+
+        cbar = fig.colorbar(pcm, ax=ax, extend='max')
         cbar.ax.set_title(r'$log(\nu^l)$')
 
-        ax1.set_xlabel('Weight initialisation ($\sigma^2_w$)')
-        ax1.set_ylabel("Number of layers")
-        ax1.set_title("{} - Variance propagation depth:\ndropout with $p$ = 0.6, crit. init. at $\sigma^2_w = 1.2$".format(dataset.upper()))
+        ax.set_xlabel('Weight initialisation ($\sigma^2_w$)')
+        ax.set_ylabel("Number of layers ($l$)")
+        ax.set_title(dataset.upper())
 
-        max_depth = 0
-        init_theory = np.linspace(0, 2.5, 1000)
-        depth_per_p_theory = depth("Dropout", init_theory, p)
-        max_depth = np.max([max_depth, np.max(depth_per_p_theory)])
-        ax1.plot(init_theory, depth_per_p_theory, label="Theory", c='cyan')
-        # ax1.plot(init_theory, depth_per_p_theory, label="Theory", c='cyan', linewidth=3)
+        ax.set_ylim(0, num_layers)
+        ax.set_xlim(np.min(init_axis), np.max(init_axis))
+        ax.text(0.2, 400, 'Underflow', color="white")
+        ax.text(1.7, 400, 'Overflow', color="white")
 
-        crit_point = critical_point("Dropout", p)
-        ax1.plot([crit_point,]*2, [0, num_layers], color="black", linestyle="--", label="criticality", dashes=(2, 2))
-        # ax1.plot([crit_point,]*2, [0, num_layers], color="black", linestyle="--", label="criticality", linewidth=4, dashes=(2, 2))
-
-        ax1.set_ylim(0, 1000)
-        ax1.set_xlim(0.1, 2.5)
-        ax1.legend()
-        ax1.set_xticks(inits[2:-2:3])
-        ax1.text(0.2, 400, 'Underflow', color="white")
-        # ax1.text(0.2, 400, 'Underflow', fontsize=25, color="white")
-        ax1.text(1.7, 400, 'Overflow', color="white")
-        # ax1.text(1.7, 400, 'Overflow', fontsize=25, color="white")
-
-        rates = np.linspace(0.1, 1, 100)
-
-
-        if dataset == "cifar-10":
-            example_dict = np.load(os.path.join(trainable_path, "trainable_depth.npy"))
-            example_dict = example_dict[:, :, -1, 0].T
-        elif dataset == "mnist":
-            pickle_in = open(os.path.join(results_dir, "val_loss_per_depth.pk"),"rb")
-            example_dict = np.array(pickle.load(pickle_in))[:, 0]
-        else:
-            raise ValueError("dataset not supported")
-
-        nets = np.linspace(2, 40, 10, dtype=int)
-        d_rates = 2*np.linspace(0.1, 1, 10)
-        xv, yv = np.meshgrid(nets, d_rates, sparse=False, indexing='ij')
-
-        Z1 = np.array(example_dict)
-        pcm = ax2.pcolormesh(yv+0.1, xv+0.1, Z1.reshape(10,10), cmap='Spectral_r', shading=shading, linewidth=0)
-        cbar1 = fig.colorbar(pcm, ax=ax2, extend='max')
-        cbar1.ax.set_title('Train loss')
-
-        ################################
-        # Training loss and depth scales
-        ################################
-        t = rates
-        x = 2*rates
-        y = 6*depth_scale(fp_slopes)
-        points = np.array([x, y]).T.reshape(-1, 1, 2)
-        segments = np.concatenate([points[:-1], points[1:]], axis=1)
-
-        lc = LineCollection(segments, cmap=plt.get_cmap('Greens'))
-        lc.set_array(t)
-        lc.set_linewidth(3)
-        cbar2 = fig.colorbar(lc, ax=ax2)
-        cbar2.ax.set_title('p')
-
-        ax2.add_collection(lc)
-        ax2.set_xlabel("Critical initialisation for $p$ ($\sigma^2_w$)")
-        ax2.set_ylabel("Number of layers")
-        txt = ax2.text(1.5, 19, r'$6\xi_c$', color="white")
-        # txt = ax2.text(1.5, 19, r'$6\xi_c$', fontsize=30, color="white")
-        txt.set_path_effects([PathEffects.withStroke(foreground='black')])
-        # txt.set_path_effects([PathEffects.withStroke(linewidth=2, foreground='black')])
-        ax2.set_title("{} - Depth at criticality".format(dataset.upper()))
-        ax2.set_xlim(0.3, 2.1)
-        ax2.set_ylim(2, 40)
-
-        if dataset == "cifar-10":
-            example_dict = np.load(os.path.join(trainable_path, "trainable_depth.npy"))
-            example_dict = example_dict[:, :, -1, 1].T
-        elif dataset == "mnist":
-            pickle_in = open(os.path.join(results_dir, "val_loss_per_depth.pk"),"rb")
-            example_dict = np.array(pickle.load(pickle_in))[:,1]
-        else:
-            raise ValueError("dataset not supported")
-
-        nets = np.linspace(2, 40, 10, dtype=int)
-        d_rates = 2*np.linspace(0.1, 1, 10)
-        xv, yv = np.meshgrid(nets, d_rates, sparse=False, indexing='ij')
-
-        Z1 = np.array(example_dict)
-        pcm = ax3.pcolormesh(yv+0.1, xv+0.1, Z1.reshape(10,10), cmap='Spectral_r', shading=shading, linewidth=0)
-        cbar1 = fig.colorbar(pcm, ax=ax3, extend='max')
-        cbar1.ax.set_title('Val. loss')
-
-        ##################################
-        # Validation loss and depth scales
-        ##################################
-        t = rates
-        x = 2*rates
-        y = 6*depth_scale(fp_slopes)
-        points = np.array([x, y]).T.reshape(-1, 1, 2)
-        segments = np.concatenate([points[:-1], points[1:]], axis=1)
-
-        lc = LineCollection(segments, cmap=plt.get_cmap('Greens'))
-        lc.set_array(t)
-        lc.set_linewidth(3)
-        cbar2 = fig.colorbar(lc, ax=ax3)
-        cbar2.ax.set_title('p')
-
-        ax3.add_collection(lc)
-        ax3.set_xlabel("Critical initialisation for $p$ ($\sigma^2_w$)")
-        ax3.set_ylabel("Number of layers")
-        txt = ax3.text(1.5, 19, r'$6\xi_c$', color="white")
-        # txt = ax3.text(1.5, 19, r'$6\xi_c$', fontsize=30, color="white")
-        txt.set_path_effects([PathEffects.withStroke(foreground='black')])
-        # txt.set_path_effects([PathEffects.withStroke(linewidth=1, foreground='black')])
-        ax3.set_title("{} - Depth at criticality".format(dataset.upper()))
-        ax3.set_xlim(0.3, 2.1)
-        ax3.set_ylim(2, 40)
+    fig.suptitle("Variance propagation depth for dropout with $p$ = 0.6, critical initialisation at $\sigma^2_w = 1.2$")
+    fig.legend(*ax1.get_legend_handles_labels(), loc='lower center', ncol=2, bbox_to_anchor=(0.5, -0.1))
 
     ##############
     # add labels #
     ##############
-    fig.text(0.03, 0.95, "(a)")
-    # fig.text(0.03, 0.95, "(a)", fontsize=25)
-    fig.text(0.36, 0.95, "(b)")
-    # fig.text(0.36, 0.95, "(b)", fontsize=25)
-    fig.text(0.68, 0.95, "(c)")
-    # fig.text(0.68, 0.95, "(c)", fontsize=25)
-    fig.text(0.03, 0.46, "(d)")
-    # fig.text(0.03, 0.46, "(d)", fontsize=25)
-    fig.text(0.36, 0.46, "(e)")
-    # fig.text(0.36, 0.46, "(e)", fontsize=25)
-    fig.text(0.68, 0.46, "(f)")
-    # fig.text(0.68, 0.46, "(f)", fontsize=25)
+    fig.text(0.02, 0.85, "(a)")
+    fig.text(0.52, 0.85, "(b)")
 
     plt.gcf().tight_layout()
-    plt.show()
-    plt.savefig(os.path.join(figures_dir, "depth_scales.pdf"), bbox_inches='tight')
+    plt.savefig(os.path.join(figures_dir, "variance_depth.pdf"), bbox_inches='tight')
+
+def plot_imperical_depth(fig, ax, dataset, dropout_rates, loss, depth_axis, init_axis, depth_scale_theory, type_loss, shading="gouraud"):
+    lc = LineCollection(depth_scale_theory, cmap=plt.get_cmap('Greens'))
+    lc.set_array(dropout_rates)
+    ax.add_collection(lc)
+
+    cbar_p = fig.colorbar(lc, ax=ax)
+    cbar_p.ax.set_title('$p$')
+    ax.set_xlabel("Critical initialisation for $p$ ($\sigma^2_w$)")
+    ax.set_ylabel("Number of layers ($l$)")
+    txt = ax.text(1.5, 15, r'$6\xi_c$', fontsize=15, color="black", weight="bold", horizontalalignment="center", verticalalignment="center")
+    txt = ax.text(1.5, 15, r'$6\xi_c$', fontsize=15, color="white", horizontalalignment="center", verticalalignment="center")
+    txt.set_path_effects([PathEffects.withStroke(foreground='black')])
+    ax.set_title(dataset.upper())
+    ax.set_xlim(0.3, 2.1)
+    ax.set_ylim(2, 40)
+
+    pcm = ax.pcolormesh(init_axis+0.1, depth_axis+0.1, loss, cmap='Spectral_r', shading=shading, linewidth=0)
+    cbar_loss = fig.colorbar(pcm, ax=ax, extend='max')
+    cbar_loss.ax.set_title(type_loss)
+
+def plot_trainable_depth(data):
+    fig, [ax1, ax2] = plt.subplots(1, 2, figsize=(8, 3))
+
+    for ax, (dataset, results) in zip([ax1, ax2], data.items()):
+        dropout_rates = results["imperical"]["training_dropout_rates"]
+        loss = results["imperical"]["train_loss"]
+        depth_axis = results["imperical"]["train_depth_axis"]
+        init_axis = results["imperical"]["train_init_axis"]
+        depth_scale_theory = results["theory"]["correlation_depth_scale"]
+
+        plot_imperical_depth(fig, ax, dataset, dropout_rates, loss, depth_axis, init_axis, depth_scale_theory, "Train loss")
+
+    fig.suptitle("Trainable depth")
+    # fig.legend(...)
+
+    ##############
+    # add labels #
+    ##############
+    fig.text(0.02, 0.85, "(a)")
+    fig.text(0.52, 0.85, "(b)")
+
+    plt.gcf().tight_layout()
+    plt.savefig(os.path.join(figures_dir, "trainable_depth.pdf"), bbox_inches='tight')
+
+def plot_generalisation_depth(data, shading="gouraud"):
+    fig, [ax1, ax2] = plt.subplots(1, 2, figsize=(8, 3))
+
+    for ax, (dataset, results) in zip([ax1, ax2], data.items()):
+        dropout_rates = results["imperical"]["training_dropout_rates"]
+        loss = results["imperical"]["test_loss"]
+        depth_axis = results["imperical"]["train_depth_axis"]
+        init_axis = results["imperical"]["train_init_axis"]
+        depth_scale_theory = results["theory"]["correlation_depth_scale"]
+
+        plot_imperical_depth(fig, ax, dataset, dropout_rates, loss, depth_axis, init_axis, depth_scale_theory, "Test loss")
+
+    fig.suptitle("Generalisation depth")
+    # fig.legend(...)
+
+    ##############
+    # add labels #
+    ##############
+    fig.text(0.02, 0.85, "(a)")
+    fig.text(0.52, 0.85, "(b)")
+
+    plt.gcf().tight_layout()
+    plt.savefig(os.path.join(figures_dir, "generalisation_depth.pdf"), bbox_inches='tight')
+
+def load_depth_scale():
+    p = 0.6
+    data = {}
+
+    # variance depth plot theory
+    init_theory = np.linspace(0, 2.5, 1000)
+    depth_per_p_theory = depth("Dropout", init_theory, p)
+    max_depth = np.max([0, np.max(depth_per_p_theory)])
+    crit_point = critical_point("Dropout", p)
+
+    # trainable depth plot theory
+    train_depth_axis = np.linspace(2, 40, 10, dtype=int)
+    critical_inits = 2 * np.linspace(0.1, 1, 10)
+    train_init_matrix, train_depth_matrix = np.meshgrid(critical_inits, train_depth_axis, indexing='ij')
+
+    dropout_rates = np.linspace(0.1, 1, 100)
+    theory_critical_inits = 2 * dropout_rates
+
+    fp_slopes = []
+    for p in dropout_rates:
+        mu2 = 1/p
+        fpoint = fixed_point(c_map, p, p*2, mu2)
+        slope = c_map_slope(fpoint, p*2)
+        fp_slopes.append(slope)
+
+    xi_c = 6 * depth_scale(fp_slopes)
+    points = np.array([theory_critical_inits, xi_c]).T.reshape(-1, 1, 2)
+    critical_init_vs_xi = np.concatenate([points[:-1], points[1:]], axis=1)
+
+    for dataset in ["mnist", "cifar-10"]:
+        dataset_dir_name = dataset.replace("-", "")
+        variance_path = os.path.join(results_dir, "variance_depth", dataset_dir_name)
+        trainable_path = os.path.join(results_dir, "trainable_depth", dataset_dir_name)
+
+        inits = np.load(os.path.join(variance_path, "variance_depth_sigma.npy"))
+        variance_per_layer = np.load(os.path.join(variance_path, "variance_depth.npy"))
+        training_data = np.load(os.path.join(trainable_path, "trainable_depth.npy"))
+
+        # # shape: (num_dropout_rates, num_depths, epoch, train / test loss)
+        final_train_loss = training_data[:, :, -1, 0]
+        final_test_loss = training_data[:, :, -1, 1]
+
+        num_layers = variance_per_layer.shape[-1]
+        depth_axis = np.linspace(1, num_layers, num_layers)
+        depth_matrix, init_matrix = np.meshgrid(depth_axis, inits, indexing='ij')
+
+        log_variance = np.log(variance_per_layer)
+
+        bad_indices = np.isnan(log_variance) + np.isinf(log_variance)
+        # bad_indices = np.isnan(Z1) or np.isinf(Z1)
+        log_variance = np.ma.array(log_variance, mask=bad_indices)
+
+        data[dataset] = {
+            "imperical": {
+                # "inits": inits,
+                "variance": log_variance,
+                "depth_axis": depth_matrix,
+                "init_axis": init_matrix,
+                "num_layers": num_layers,
+                "training_dropout_rates": dropout_rates,
+                "train_depth_axis": train_depth_matrix,
+                "train_init_axis": train_init_matrix,
+                "train_loss": final_train_loss,
+                "test_loss": final_test_loss
+            },
+            "theory": {
+                "init_axis": init_theory,
+                "critical": crit_point,
+                "max_depth": depth_per_p_theory,
+                "p": p,
+                "correlation_depth_scale": critical_init_vs_xi
+            }
+        }
+
+    return data
+
+def plot_depth_scales():
+    # load data
+    data = load_depth_scale()
+
+    plot_variance_depth_scale(data)
+    plot_trainable_depth(data)
+    plot_generalisation_depth(data)
 
 if __name__ == "__main__":
     # plot settings
@@ -1284,10 +1267,10 @@ if __name__ == "__main__":
     figures_dir = os.path.join(file_dir, "../figures")
     os.makedirs(figures_dir, exist_ok=True)
 
-    # plot_tanh()
-    # plot_variance()
-    # plot_variance_edge()
-    # plot_correlation()
-    # plot_correlation_edge_theory()
-    # plot_fixed_point_convergence()
+    plot_tanh()
+    plot_variance()
+    plot_variance_edge()
+    plot_correlation()
+    plot_correlation_edge_theory()
+    plot_fixed_point_convergence()
     plot_depth_scales()

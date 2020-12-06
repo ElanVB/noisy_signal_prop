@@ -1071,6 +1071,10 @@ def plot_variance_depth_scale(data, shading="gouraud"):
         init_axis_theory = results["theory"]["init_axis"]
         max_depth = results["theory"]["max_depth"]
         critical = results["theory"]["critical"]
+        xavier = results["theory"]["xavier_init"]
+        xavier_depth = results["theory"]["xavier_depth"]
+        he = results["theory"]["he_init"]
+        he_depth = results["theory"]["he_depth"]
         num_layers = results["imperical"]["num_layers"]
 
         cmap = mpl.cm.get_cmap(name="Spectral_r")
@@ -1079,6 +1083,8 @@ def plot_variance_depth_scale(data, shading="gouraud"):
         pcm = ax.pcolormesh(init_axis, depth_axis, variance.T, cmap=cmap, shading=shading, linewidth=0)
         ax.plot(init_axis_theory, max_depth, label="Theoretical maximum depth", c='cyan')
         ax.plot([critical,]*2, [0, num_layers], color="black", linestyle="--", label="Criticality", dashes=(2, 2))
+        ax.plot([xavier,]*2, [0, xavier_depth], color="orange", linestyle="--", label="Xavier", dashes=(2, 2))
+        ax.plot([he,]*2, [0, he_depth], color="dodgerblue", linestyle="--", label="He", dashes=(2, 2))
 
         cbar = fig.colorbar(pcm, ax=ax, extend='max')
         cbar.ax.set_title(r'$log(\nu^l)$')
@@ -1093,7 +1099,7 @@ def plot_variance_depth_scale(data, shading="gouraud"):
         ax.text(1.7, 400, 'Overflow', color="white")
 
     fig.suptitle("Variance propagation depth for dropout with $p$ = 0.6, critical initialisation at $\sigma^2_w = 1.2$")
-    fig.legend(*ax1.get_legend_handles_labels(), loc='lower center', ncol=2, bbox_to_anchor=(0.5, -0.1))
+    fig.legend(*ax1.get_legend_handles_labels(), loc='lower center', ncol=4, bbox_to_anchor=(0.5, -0.1))
 
     ##############
     # add labels #
@@ -1179,8 +1185,16 @@ def load_depth_scale():
     # variance depth plot theory
     init_theory = np.linspace(0, 2.5, 1000)
     depth_per_p_theory = depth("Dropout", init_theory, p)
-    max_depth = np.max([0, np.max(depth_per_p_theory)])
     crit_point = critical_point("Dropout", p)
+
+    # calculate what depth Xavier and He inits would terminate at and put that on the figure
+    xavier_init = 1
+    xavier_index = np.argmin(np.abs(init_theory - xavier_init))
+    xavier_depth = depth_per_p_theory[xavier_index]
+
+    he_init = 2
+    he_index = np.argmin(np.abs(init_theory - he_init))
+    he_depth = depth_per_p_theory[he_index]
 
     # trainable depth plot theory
     train_depth_axis = np.linspace(2, 40, 10, dtype=int)
@@ -1242,7 +1256,11 @@ def load_depth_scale():
                 "critical": crit_point,
                 "max_depth": depth_per_p_theory,
                 "p": p,
-                "correlation_depth_scale": critical_init_vs_xi
+                "correlation_depth_scale": critical_init_vs_xi,
+                "xavier_init": xavier_init,
+                "xavier_depth": xavier_depth,
+                "he_init": he_init,
+                "he_depth": he_depth,
             }
         }
 
@@ -1253,8 +1271,8 @@ def plot_depth_scales():
     data = load_depth_scale()
 
     plot_variance_depth_scale(data)
-    plot_trainable_depth(data)
-    plot_generalisation_depth(data)
+    # plot_trainable_depth(data)
+    # plot_generalisation_depth(data)
 
 if __name__ == "__main__":
     # plot settings
@@ -1267,10 +1285,10 @@ if __name__ == "__main__":
     figures_dir = os.path.join(file_dir, "../figures")
     os.makedirs(figures_dir, exist_ok=True)
 
-    plot_tanh()
-    plot_variance()
-    plot_variance_edge()
-    plot_correlation()
-    plot_correlation_edge_theory()
-    plot_fixed_point_convergence()
+    # plot_tanh()
+    # plot_variance()
+    # plot_variance_edge()
+    # plot_correlation()
+    # plot_correlation_edge_theory()
+    # plot_fixed_point_convergence()
     plot_depth_scales()

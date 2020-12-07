@@ -19,24 +19,12 @@ sys.path.append(file_dir)
 # custom import
 from theory import depth
 from viz import get_colours
-# from src.numpy_simulation import *
 from utils import load_experiment
 from theory import critical_point, fixed_point, c_map, c_map_slope, depth_scale
 
 def set_plot_params():
-    # sns.set_context("paper", font_scale=2)
-
     sns.set_context("paper", rc={
     # sns.set_context("paper", font_scale=2, rc={
-        # "axes.labelsize": 9,
-        # "xtick.labelsize": 9,
-        # "ytick.labelsize": 9,
-        # "legend.fontsize": 9,
-        # "font.size": 9,
-        # "font.family": "serif",
-        # "font.serif": "Computer Modern Roman",
-        # "text.usetex": True,
-        # "pdf.fonttype": 42,
         "image.cmap": "viridis",
         "lines.linewidth": 2,
         "lines.markersize": 4,
@@ -45,102 +33,6 @@ def set_plot_params():
     rcParams['font.serif'] = ['Computer Modern Roman']
     rcParams['text.usetex'] = True
     rcParams['pdf.fonttype'] = 42
-
-    # rcParams['axes.labelsize'] = 9
-    # rcParams['xtick.labelsize'] = 9
-    # rcParams['ytick.labelsize'] = 9
-    # rcParams['legend.fontsize'] = 9
-    # rcParams['font.size'] = 9
-    # # rcParams['font.size'] = 100
-
-    # rcParams['image.cmap'] = 'viridis'
-
-    # rcParams["lines.linewidth"] = 10
-    # rcParams["lines.markersize"] = 3
-
-    # sns.set_style({
-    #     "legend.frameon": True,
-    #     # "axes.facecolor": "white"
-    #     "axes.facecolor": (0, 0, 0, 0)
-    # })
-
-    # sns.set_context("paper", font_scale=2)
-
-# def plot_iterative_map():
-#     pal = get_colours(6, 7)[2:]
-#     test_data = []
-#     for i, test in enumerate(tests):
-#         test_data.append(load_experiment(test, ["q_maps", "single_layer_qmap_sim", "multi_layer_qmap_sim"], results_dir))
-
-    # fig = plt.figure(figsize=(16, 6))
-
-#     # gs = plt.GridSpec(1, 2)
-#     # ax1 = plt.subplot(gs[0, 0])
-#     # ax2 = plt.subplot(gs[0, 1])
-
-#     # Add unity line
-#     plt.plot((0, qmax), (0, qmax), '--', color='k', zorder=900, dashes=(4, 8), label="Identity line")
-#     plt.xlim(0, qmax)
-#     plt.ylim(0, qmax)
-#     plt.xlabel('Input variance ($\nu^{l-1}$)')
-#     plt.ylabel('Output variance ($\nu^l$)')
-#     plt.title("Iterative variance map")
-
-#     nn = len(test_data)
-#     col_i = 0
-#     shade_i = 5
-#     for test, attr in zip(test_data, tests):
-#         for dist in attr["distributions"]:
-#             for act in attr["activations"]:
-#                 if dist['dist'] == "none":
-#                     if act == "tanh":
-#                         label = "tanh - None"
-#                         col_i = 0
-#                     else:
-#                         label = "ReLU - None"
-#                         col_i = 2
-#                 elif "gauss" in dist['dist']:
-#                     if act == "tanh":
-#                         label = "tanh - Add Gauss $(\sigma^2_\epsilon = $ " + str(dist['std']) + ")"
-#                         col_i = 1
-#                     else:
-#                         label = "ReLU - Add Gauss $(\sigma^2_\epsilon = $ " + str(dist['std']) + ")"
-#                         col_i = 3
-#                 for init in attr["inits"]:
-#                     dashes = (None, None)
-
-#                     # extract test data
-#                     qmaps = test[dist['dist']][act][init]['q_maps']['qmaps']
-#                     single_layer_sims = test[dist['dist']][act][init]['single_layer_qmap_sim']
-
-#                     ############################################################################
-#                     # left
-#                     ############################################################################
-#                     for w, b in zip(widxs, bidxs):
-
-#                         # plot means of simulation (as dots)
-#                         mu = single_layer_sims[w, b].mean(-1).mean(-2)
-#                         # ax1.plot(qrange, mu, w, b, marker='o', ls='none', markersize=1, alpha=0.9, zorder=0, c=pal[col_i][shade_i])
-#                         ax1.plot(qrange, mu, w, b, marker='o', markersize=4, alpha=0.9, color=pal[col_i][shade_i])
-
-#                         # add confidence interval around simulation
-#                         std = single_layer_sims[w, b].mean(-1).std(-2)
-#                         ax1.fill_between(qrange, mu-std, mu+std, alpha=0.4, label='_nolegend_', color=pal[col_i][3])
-
-#                         # theory line
-#                         ax1.plot(qrange, qmaps[0, 0, :, 1], c=pal[col_i][shade_i], label=label, dashes=dashes)
-
-#     leg = ax1.legend(prop={'size': 15})
-
-#     # set the linewidth of each legend object
-#     for legobj in leg.legendHandles:
-#         legobj.set_linewidth(3.0)
-
-#     plt.gcf().tight_layout()
-#     plt.savefig(os.path.join(figures_dir, "{name}_iterative_map.pdf"))
-
-# def plot_dynamics():
-#     pass
 
 def plot_tanh():
     # Dictionary for data that needs to be extracted
@@ -173,15 +65,12 @@ def plot_tanh():
     n_hidden_layers = 16
 
     n_tests = len(tests)
-    #pal = get_colours(10, 7)
     pal = get_colours(6, 7)[2:]
     test_data = []
     for i, test in enumerate(tests):
         test_data.append(load_experiment(test, ["q_maps", "single_layer_qmap_sim", "multi_layer_qmap_sim"], results_dir))
 
     fig = plt.figure(figsize=(8, 3))
-    # fig = plt.figure(figsize=(12, 4.5))
-    # fig = plt.figure(figsize=(16, 6))
 
     gs = plt.GridSpec(1, 2)
     ax1 = plt.subplot(gs[0, 0])
@@ -189,7 +78,6 @@ def plot_tanh():
 
     # Add unity line
     ax1.plot((0, qmax), (0, qmax), '--', color='k', zorder=900, dashes=(12, 24), label="Identity line")
-    # ax1.plot((0, qmax), (0, qmax), '--', color='k', zorder=900, dashes=(4, 8), label="Identity line")
     ax1.set_xlim(0, qmax)
     ax1.set_ylim(0, qmax)
     ax1.set_xlabel(r'Input variance ($\nu^{l-1})$')
@@ -197,7 +85,7 @@ def plot_tanh():
     ax1.set_title("Iterative variance map")
 
     # axis 2
-    ax2.set_xlim(0, qmax-1) #n_hidden_layers-1)
+    ax2.set_xlim(0, qmax-1)
     ax2.set_ylim(0, qmax)
     ax2.set_xlabel(r'Layer ($l$)')
     ax2.set_ylabel(r'Variance ($\nu^{l})$')
@@ -245,7 +133,6 @@ def plot_tanh():
                         # plot means of simulation (as dots)
                         mu = single_layer_sims[w, b].mean(-1).mean(-2)
                         ax1.plot(qrange, mu, w, b, marker='o', ls='none', alpha=0.9, zorder=0, c=pal[col_i][shade_i])
-                        # ax1.plot(qrange, mu, w, b, marker='o', ls='none', markersize=1, alpha=0.9, zorder=0, c=pal[col_i][shade_i])
 
                         # add confidence interval around simulation
                         std = single_layer_sims[w, b].mean(-1).std(-2)
@@ -273,15 +160,12 @@ def plot_tanh():
 
                         # dots for mean
                         ax2.plot(xx, mu, 'o', alpha=0.9, color=pal[col_i][shade_i], label="Simulation")
-                        # ax2.plot(xx, mu, 'o', markersize=4, alpha=0.9, color=pal[col_i][shade_i], label="Simulation")
 
     ##############
     # add labels #
     ##############
     fig.text(0.02, 0.95, "(a)")
-    # fig.text(0.02, 0.95, "(a)", fontsize=20)
     fig.text(0.52, 0.95, "(b)")
-    # fig.text(0.52, 0.95, "(b)", fontsize=20)
 
     handles, labels = ax1.get_legend_handles_labels()
     fig.legend(
@@ -290,7 +174,6 @@ def plot_tanh():
 
     plt.gcf().tight_layout()
     plt.savefig(os.path.join(figures_dir, "tanh.pdf"), bbox_inches='tight')
-    # plt.savefig("tanh.pdf", dpi=200)
 
 def shared_legend(fig, ncol=3):
     handles_labels = [ax.get_legend_handles_labels() for ax in fig.axes]
@@ -373,12 +256,7 @@ def plot_variance():
     for i, test in enumerate(tests):
         test_data.append(load_experiment(test, ["q_maps", "single_layer_qmap_sim", "multi_layer_qmap_sim"], results_dir))
 
-
-    # fig, [ax1, ax2, ax3] = plt.subplots(1, 3)
     fig, [ax1, ax2] = plt.subplots(1, 2, figsize=(8, 3))
-    # fig, [ax1, ax2, ax3] = plt.subplots(1, 3, figsize=(8, 2))
-    # fig, [ax1, ax2, ax3] = plt.subplots(1, 3, figsize=(12, 3))
-    # fig, [ax1, ax2, ax3] = plt.subplots(1, 3, figsize=(16, 5))
 
     # Add unity line
     ax1.plot((0, qmax), (0, qmax), '--', color='k', zorder=900, dashes=(12, 24), label="Identity line")
@@ -388,11 +266,8 @@ def plot_variance():
     ax1.set_ylabel(r'Output variance ($\nu^l$)')
     ax1.set_title("Iterative variance map")
     ax1.text(2, 10, r'$\sigma^2_w > \frac{2}{\mu_2}$')
-    # ax1.text(2, 10, r'$\sigma^2_w > \frac{2}{\mu_2}$', fontsize=20)
     ax1.text(10, 1, r'$\sigma^2_w < \frac{2}{\mu_2}$')
-    # ax1.text(10, 1, r'$\sigma^2_w < \frac{2}{\mu_2}$', fontsize=20)
     ax1.text(11, 10, r'$\sigma^2_w = \frac{2}{\mu_2}$')
-    # ax1.text(11, 8.5, r'$\sigma^2_w = \frac{2}{\mu_2}$', fontsize=20)
 
     # axis 2
     ax2.set_xlim(0, qmax)
@@ -443,7 +318,6 @@ def plot_variance():
                         # plot means of simulation (as dots)
                         mu = single_layer_sims[w, b].mean(-1).mean(-2)
                         ax1.plot(qrange, mu, w, b, marker='o', ls='none', alpha=0.9, zorder=0, c=pal[col_i][shade_i])
-                        # ax1.plot(qrange, mu, w, b, marker='o', ls='none', markersize=1, alpha=0.9, zorder=0, c=pal[col_i][shade_i])
 
                         # add confidence interval around simulation
                         std = single_layer_sims[w, b].mean(-1).std(-2)
@@ -451,11 +325,9 @@ def plot_variance():
 
                         # theory line
                         ax1.plot(qrange, qmaps[0, 0, :, 1], c=pal[col_i][shade_i], label=label, dashes=dashes)
-                        # fixed point
-
 
                     ############################################################################
-                    # middle
+                    # right
                     ############################################################################
                     q = 1
                     xx = np.arange(multi_layer_sims.shape[-2])
@@ -479,45 +351,6 @@ def plot_variance():
 
                         # dots for mean
                         ax2.plot(xx, mu, 'o', alpha=0.9, color=pal[col_i][shade_i])
-                        # ax2.plot(xx, mu, 'o', markersize=4, alpha=0.9, color=pal[col_i][shade_i])
-
-    # leg = ax2.legend()
-    # leg = ax2.legend()
-
-    # # set the linewidth of each legend object
-    # for legobj in leg.legendHandles:
-    #     legobj.set_linewidth(3.0)
-
-    # mu21 = np.linspace(1, 2, 100)
-    # sigma1 = 2/mu21
-
-    # ############################################################################
-    # # right
-    # ############################################################################
-    # ax3.plot(mu21, sigma1, c="purple", label="Variance critical boundary", linestyle='--')
-    # ax3.fill_between(mu21, 1, sigma1, facecolor='blue', alpha=0.2)
-    # ax3.fill_between(mu21, 2, sigma1, facecolor='red', alpha=0.2)
-    # ax3.text(1.5, 1.6, 'Overflow')
-    # # ax3.text(1.5, 1.6, 'Overflow', fontsize=25)
-    # ax3.text(1.55, 1.5, r'($\sigma^2_w > \frac{2}{\mu_2}$)')
-    # # ax3.text(1.55, 1.5, r'($\sigma^2_w > \frac{2}{\mu_2}$)', fontsize=15)
-    # ax3.text(1.1, 1.2, 'Underflow')
-    # # ax3.text(1.1, 1.2, 'Underflow', fontsize=25)
-    # ax3.text(1.15, 1.1, r'($\sigma^2_w < \frac{2}{\mu_2}$)')
-    # # ax3.text(1.15, 1.1, r'($\sigma^2_w < \frac{2}{\mu_2}$)', fontsize=15)
-    # ax3.text(1.2, 1.7, r'$\sigma^2_w = \frac{2}{\mu_2}$')
-    # # ax3.text(1.2, 1.7, r'$\sigma^2_w = \frac{2}{\mu_2}$', fontsize=18)
-    # ax3.set_xlim(1, 2)
-    # ax3.set_ylim(1, 2)
-    # ax3.set_xlabel('Weight initialisation ($\sigma^2_w$)')
-    # ax3.set_ylabel('Second moment of noise dist. ($\mu_2$)')
-
-    # leg = ax3.legend()
-    # leg = ax3.legend(prop={'size': 15})
-
-    # # set the linewidth of each legend object
-    # for legobj in leg.legendHandles:
-    #     legobj.set_linewidth(3.0)
 
     shared_legend(fig)
 
@@ -525,7 +358,7 @@ def plot_variance():
     fig.text(0.52, 0.95, "(b)")
 
     plt.gcf().tight_layout()
-    plt.savefig(os.path.join(figures_dir, "vairance.pdf"), bbox_inches='tight')
+    plt.savefig(os.path.join(figures_dir, "variance.pdf"), bbox_inches='tight')
 
 def plot_variance_edge():
     mu21 = np.linspace(1, 2, 100)
@@ -537,15 +370,10 @@ def plot_variance_edge():
     ax3.fill_between(mu21, 1, sigma1, facecolor='blue', alpha=0.2)
     ax3.fill_between(mu21, 2, sigma1, facecolor='red', alpha=0.2)
     ax3.text(1.5, 1.6, 'Overflow')
-    # ax3.text(1.5, 1.6, 'Overflow', fontsize=25)
     ax3.text(1.55, 1.5, r'($\sigma^2_w > \frac{2}{\mu_2}$)')
-    # ax3.text(1.55, 1.5, r'($\sigma^2_w > \frac{2}{\mu_2}$)', fontsize=15)
     ax3.text(1.1, 1.2, 'Underflow')
-    # ax3.text(1.1, 1.2, 'Underflow', fontsize=25)
     ax3.text(1.15, 1.1, r'($\sigma^2_w < \frac{2}{\mu_2}$)')
-    # ax3.text(1.15, 1.1, r'($\sigma^2_w < \frac{2}{\mu_2}$)', fontsize=15)
     ax3.text(1.2, 1.7, r'$\sigma^2_w = \frac{2}{\mu_2}$')
-    # ax3.text(1.2, 1.7, r'$\sigma^2_w = \frac{2}{\mu_2}$', fontsize=18)
     ax3.set_xlim(1, 2)
     ax3.set_ylim(1, 2)
     ax3.set_xlabel('Weight initialisation ($\sigma^2_w$)')
@@ -553,10 +381,6 @@ def plot_variance_edge():
     ax3.set_title('Variance propagation dynamics')
 
     ax3.legend()
-    # fig.legend()
-    # fig.legend(
-    #     loc='lower center', ncol=3, bbox_to_anchor=(0.5,-0.15)
-    # )
 
     plt.gcf().tight_layout()
     plt.savefig(os.path.join(figures_dir, "vairance_edge_theory.pdf"), bbox_inches='tight')
@@ -585,9 +409,7 @@ def plot_correlation():
     }]
 
     pal = get_colours(10, 7)
-    # fig, [ax1, ax2, ax3] = plt.subplots(1, 3)
     fig, [ax1, ax2] = plt.subplots(1, 2, figsize=(8, 3))
-    # fig, [ax1, ax2, ax3] = plt.subplots(1, 3, figsize=(18, 5))
     test_data = []
     for i, test in enumerate(tests):
         test_data.append(load_experiment(test,
@@ -643,7 +465,6 @@ def plot_correlation():
                             horizontalalignment='right',
                             verticalalignment='top',
                         )
-                        # ax1.text(x, y, r"($\sigma_\epsilon = {})".format(dist['std']))
                     elif "prob_1" in dist:
                         label = "Dropout"
 
@@ -655,20 +476,9 @@ def plot_correlation():
                     else:
                         label = "None"
 
-                    # try:
-                    #     label = "Mult Gauss ($\sigma_\epsilon = {}$) ".format(str(dist['std']))
-                    #     label = "Mult Gauss"
-                    # except:
-                    #     try:
-                    #         label ="dropout ($p = {}$)".format(str(dist['prob_1']))
-                    #         label = "dropout"
-                    #     except:
-                    #         label = dist['dist']
-
                     ############################################################
                     # left - Correlation map
                     ############################################################
-
                     # Theory
                     ax1.plot(crange, cmaps[0, 0], c=pal[col_i][shade_i], label=label)
 
@@ -678,21 +488,12 @@ def plot_correlation():
                     std_y = cmap_sim_output.mean(axis=1).std(axis=0)
 
                     ax1.scatter(mu_x, mu_y, marker="o", alpha=0.9, color=pal[col_i][shade_i])
-                    # ax1.scatter(mu_x, mu_y, marker="o", s=4, alpha=0.9, color=pal[col_i][shade_i])
                     ax1.fill_between(mu_x, mu_y - std_y, mu_y + std_y, alpha=0.2, label='_nolegend_', color=pal[col_i][shade_i])
 
-                    # Add unity line
-                    ax1.plot((0, 1), (0, 1), '--', color='k', zorder=900)
-                    ax1.set_xlim(0, 1)
-                    ax1.set_ylim(0, 1)
-
-                    # ax1.plot(cstars[0, 0], cstars[0, 0], marker='x', mew=3, c=pal[col_i][shade_i], zorder=999, alpha=1.0, clip_on=False)
                     ax1.plot(cstars[0, 0], cstars[0, 0], markersize=15, marker='x', mew=3, c=pal[col_i][shade_i], zorder=999, alpha=1.0, clip_on=False)
 
-                    ax1.set_title(r'Iterative correlation map')
-
                     ############################################################
-                    # middle - dynamics of convergence
+                    # right - dynamics of convergence
                     ############################################################
                     # Theory
                     for j in range(correlations.shape[0]):
@@ -709,7 +510,6 @@ def plot_correlation():
                             horizontalalignment='right',
                             verticalalignment='top',
                         )
-                        # ax2.text(x, y, r"($\sigma_\epsilon = {})".format(dist['std']))
                     elif "prob_1" in dist:
                         ax2.text(
                             x, y, f"($p = {dist['prob_1']}$)",
@@ -722,19 +522,18 @@ def plot_correlation():
 
                     for i in np.arange(means.shape[0]):
                         ax2.scatter(np.arange(means[i].shape[0]), means[i], marker='o', alpha=0.9, color=pal[col_i][shade_i])
-                        # ax2.scatter(np.arange(means[i].shape[0]), means[i], marker='o', s=8, alpha=0.9, color=pal[col_i][shade_i])
                         ax2.fill_between(x_axis, means[i] - std[i], means[i] + std[i], alpha=0.2, label='_nolegend_', color=pal[col_i][shade_i])
+
+    # Add unity line
+    ax1.plot((0, 1), (0, 1), '--', color='k', zorder=900, label="Identity line")
+    ax1.set_xlim(0, 1)
+    ax1.set_ylim(0, 1)
+    ax1.set_title(r'Iterative correlation map')
 
     ax1.set_xticks([0, 0.5, 1.0])
     ax1.set_yticks([0, 0.5, 1.0])
     ax1.set_xlabel(r'Input correlation ($c^{l-1})$')
     ax1.set_ylabel(r'Output correlation ($c^{l}$)')
-    # leg = ax1.legend()
-    # leg = ax1.legend(prop={'size': 12})
-
-    # # set the linewidth of each legend object
-    # for legobj in leg.legendHandles:
-    #     legobj.set_linewidth(3.0)
 
     ax2.set_xlabel(r'Layer ($l$)')
     ax2.set_ylabel(r'Correlation ($c^{l})$')
@@ -743,7 +542,7 @@ def plot_correlation():
     ax2.set_ylim(0, 1)
     ax2.set_xlim(0, correlations.shape[-1] - 1)
 
-    shared_legend(fig)
+    shared_legend(fig, ncol=4)
 
     fig.text(0.02, 0.95, "(a)")
     fig.text(0.52, 0.95, "(b)")
@@ -773,17 +572,9 @@ def plot_correlation_edge_theory():
     ax3.set_xlabel(r"Second moment of noise distribution ($\mu_2$)")
     ax3.set_ylabel(r"Slope at fixed point ($\chi (c^*)$)")
     ax3.scatter(1, 1, c="red", marker='*', s=100, label='Edge of chaos')
-    # ax3.scatter(1, 1, c="red", marker='*', label='Edge of chaos')
-    # ax3.scatter(1, 1, c="red", marker='*', label='Edge of chaos', s=100)
     ax3.fill_between(mu2s, 0, 1, facecolor='cyan', alpha=0.2)
     ax3.text(3, 0.5, 'Ordered regime \n (vanishing gradients)')
-    # ax3.text(3, 0.5, 'Ordered regime \n (vanishing gradients)', fontsize=12)
     leg = ax3.legend()
-    # leg = ax3.legend(prop={'size': 12})
-
-    # # set the linewidth of each legend object
-    # for legobj in leg.legendHandles:
-    #     legobj.set_linewidth(3.0)
 
     ax3.set_xlim(0.8, 10)
     ax3.set_ylim(0, 1.05)
@@ -1143,7 +934,6 @@ def plot_trainable_depth(data):
         plot_imperical_depth(fig, ax, dataset, dropout_rates, loss, depth_axis, init_axis, depth_scale_theory, "Train loss")
 
     fig.suptitle("Trainable depth")
-    # fig.legend(...)
 
     ##############
     # add labels #
@@ -1167,7 +957,6 @@ def plot_generalisation_depth(data, shading="gouraud"):
         plot_imperical_depth(fig, ax, dataset, dropout_rates, loss, depth_axis, init_axis, depth_scale_theory, "Test loss")
 
     fig.suptitle("Generalisation depth")
-    # fig.legend(...)
 
     ##############
     # add labels #
@@ -1271,8 +1060,8 @@ def plot_depth_scales():
     data = load_depth_scale()
 
     plot_variance_depth_scale(data)
-    # plot_trainable_depth(data)
-    # plot_generalisation_depth(data)
+    plot_trainable_depth(data)
+    plot_generalisation_depth(data)
 
 if __name__ == "__main__":
     # plot settings
@@ -1285,10 +1074,10 @@ if __name__ == "__main__":
     figures_dir = os.path.join(file_dir, "../figures")
     os.makedirs(figures_dir, exist_ok=True)
 
-    # plot_tanh()
-    # plot_variance()
-    # plot_variance_edge()
-    # plot_correlation()
-    # plot_correlation_edge_theory()
-    # plot_fixed_point_convergence()
+    plot_tanh()
+    plot_variance()
+    plot_variance_edge()
+    plot_correlation()
+    plot_correlation_edge_theory()
+    plot_fixed_point_convergence()
     plot_depth_scales()

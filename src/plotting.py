@@ -275,6 +275,9 @@ def plot_variance():
     ax2.set_xlabel(r'Layer ($l$)')
     ax2.set_ylabel(r'Variance ($\nu^{l})$')
     ax2.set_title(r"Dynamics of $\nu$")
+    ax2.text(5, 10, r'$\sigma^2_w > \frac{2}{\mu_2}$')
+    ax2.text(10, 1, r'$\sigma^2_w < \frac{2}{\mu_2}$')
+    ax2.text(12, 6, r'$\sigma^2_w = \frac{2}{\mu_2}$')
 
     nn = len(test_data)
     col_i = 0
@@ -377,7 +380,8 @@ def plot_variance_edge():
     ax3.set_xlim(1, 2)
     ax3.set_ylim(1, 2)
     ax3.set_xlabel('Weight initialisation ($\sigma^2_w$)')
-    ax3.set_ylabel('Second moment of noise dist. ($\mu_2$)')
+    ax3.set_ylabel('Second moment of noise distribution ($\mu_2$)')
+    # ax3.set_ylabel('Second moment of noise dist. ($\mu_2$)')
     ax3.set_title('Variance propagation dynamics')
 
     ax3.legend()
@@ -532,12 +536,12 @@ def plot_correlation():
 
     ax1.set_xticks([0, 0.5, 1.0])
     ax1.set_yticks([0, 0.5, 1.0])
-    ax1.set_xlabel(r'Input correlation ($c^{l-1})$')
-    ax1.set_ylabel(r'Output correlation ($c^{l}$)')
+    ax1.set_xlabel(r'Input correlation ($\rho^{l-1})$')
+    ax1.set_ylabel(r'Output correlation ($\rho^{l}$)')
 
     ax2.set_xlabel(r'Layer ($l$)')
-    ax2.set_ylabel(r'Correlation ($c^{l})$')
-    ax2.set_title(r'Dynamics of $c$')
+    ax2.set_ylabel(r'Correlation ($\rho^{l})$')
+    ax2.set_title(r'Dynamics of $\rho$')
     ax2.set_yticks([0, 0.5, 1])
     ax2.set_ylim(0, 1)
     ax2.set_xlim(0, correlations.shape[-1] - 1)
@@ -570,7 +574,7 @@ def plot_correlation_edge_theory():
     ############################################################
     ax3.plot(mu2s, fp_slopes, c='purple', label="Critical")
     ax3.set_xlabel(r"Second moment of noise distribution ($\mu_2$)")
-    ax3.set_ylabel(r"Slope at fixed point ($\chi (c^*)$)")
+    ax3.set_ylabel(r"Slope at fixed point ($\chi (\rho^*)$)")
     ax3.scatter(1, 1, c="red", marker='*', s=100, label='Edge of chaos')
     ax3.fill_between(mu2s, 0, 1, facecolor='cyan', alpha=0.2)
     ax3.text(3, 0.5, 'Ordered regime \n (vanishing gradients)')
@@ -587,17 +591,17 @@ def plot_rate_of_convergence(data):
     fig, [ax1, ax2] = plt.subplots(1, 2, figsize=(8, 3))
 
     for ax, (noise_type, results) in zip([ax1, ax2], data.items()):
-        for noise_label, colour, theory, imperical in zip(
+        for noise_label, colour, theory, emperical in zip(
             results["noise"],
             results["colours"],
             results["convergence_theory"],
-            results["convergence_imperical"],
+            results["convergence_emperical"],
         ):
             ax.plot(theory, color=colour)
-            ax.plot(imperical, color=colour, marker="o", linestyle="")
+            ax.plot(emperical, color=colour, marker="o", linestyle="")
 
         ax.set_yscale('log')
-        ax.set_ylabel(r'$|c^l - c^*|$')
+        ax.set_ylabel(r'$|\rho^l - \rho^*|$')
         ax.set_xlabel('Layer ($l$)')
         ax.set_title(noise_type)
 
@@ -621,10 +625,10 @@ def plot_theoretical_vs_measured_depth_scale(data):
         ax.plot(results["mu"], results["xi_theory"], color=results["colour"])
 
         # plot empirical results
-        ax.plot(results["mu"], results["xi_imperical"], color=results["colour"], marker="o", linestyle="")
+        ax.plot(results["mu"], results["xi_emperical"], color=results["colour"], marker="o", linestyle="")
 
-        ax.set_ylabel(r'$\xi_c$')
-        ax.set_xlabel(r'$\mu_2$')
+        ax.set_ylabel(r'$\xi_\rho$')
+        ax.set_xlabel(r'Second moment of noise distribution ($\mu_2$)')
         ax.set_title(noise_type)
 
     fig.suptitle("Depth scales")
@@ -646,7 +650,7 @@ def load_and_process_correlation_convergence(tests):
     inferred_xi = []
     depth_colour = None
     convergence_colours = []
-    imperical_convergence = []
+    emperical_convergence = []
     theoretical_convergence = []
 
     pal = pal = get_colours(4, 13)
@@ -704,18 +708,18 @@ def load_and_process_correlation_convergence(tests):
                         theory_array.append(theory)
 
                     inferred_xi.append(np.mean(xi_array))
-                    imperical_convergence.append(np.mean(rates_array, axis=0))
+                    emperical_convergence.append(np.mean(rates_array, axis=0))
                     theoretical_convergence.append(np.mean(theory_array, axis=0))
 
     mu2s = np.array(mu2s)
     c_stars = np.array(c_stars)
     inferred_xi = np.array(inferred_xi)
-    imperical_convergence = np.array(imperical_convergence)
+    emperical_convergence = np.array(emperical_convergence)
     theoretical_convergence = np.array(theoretical_convergence)
 
-    # mask zero values in imperical convergence because it ruins the plot
-    zeros = imperical_convergence == 0
-    imperical_convergence = np.ma.array(imperical_convergence, mask=zeros)
+    # mask zero values in emperical convergence because it ruins the plot
+    zeros = emperical_convergence == 0
+    emperical_convergence = np.ma.array(emperical_convergence, mask=zeros)
     theoretical_convergence = np.ma.array(theoretical_convergence, mask=zeros)
 
     # compare theory depth scales with inferred ones from simulations
@@ -732,13 +736,13 @@ def load_and_process_correlation_convergence(tests):
             "noise": noises,
             "colours": convergence_colours,
             "convergence_theory": theoretical_convergence,
-            "convergence_imperical": imperical_convergence
+            "convergence_emperical": emperical_convergence
         },
         "depth_scale": {
             "mu": mu2s_line,
             "colour": depth_colour,
             "xi_theory": xi_c_line,
-            "xi_imperical": inf_xi_line,
+            "xi_emperical": inf_xi_line,
         }
     }
 
@@ -856,9 +860,9 @@ def plot_variance_depth_scale(data, shading="gouraud"):
     fig, [ax1, ax2] = plt.subplots(1, 2, figsize=(8, 3))
 
     for ax, (dataset, results) in zip([ax1, ax2], data.items()):
-        init_axis = results["imperical"]["init_axis"]
-        depth_axis = results["imperical"]["depth_axis"]
-        variance = results["imperical"]["variance"]
+        init_axis = results["emperical"]["init_axis"]
+        depth_axis = results["emperical"]["depth_axis"]
+        variance = results["emperical"]["variance"]
         init_axis_theory = results["theory"]["init_axis"]
         max_depth = results["theory"]["max_depth"]
         critical = results["theory"]["critical"]
@@ -866,13 +870,13 @@ def plot_variance_depth_scale(data, shading="gouraud"):
         xavier_depth = results["theory"]["xavier_depth"]
         he = results["theory"]["he_init"]
         he_depth = results["theory"]["he_depth"]
-        num_layers = results["imperical"]["num_layers"]
+        num_layers = results["emperical"]["num_layers"]
 
         cmap = mpl.cm.get_cmap(name="Spectral_r")
         cmap.set_bad('black')
 
         pcm = ax.pcolormesh(init_axis, depth_axis, variance.T, cmap=cmap, shading=shading, linewidth=0)
-        ax.plot(init_axis_theory, max_depth, label="Theoretical maximum depth", c='cyan')
+        ax.plot(init_axis_theory, max_depth, label=r"Theoretical maximum depth ($\ell_\nu (\sigma_w^2)$)", c='cyan')
         ax.plot([critical,]*2, [0, num_layers], color="black", linestyle="--", label="Criticality", dashes=(2, 2))
         ax.plot([xavier,]*2, [0, xavier_depth], color="orange", linestyle="--", label="Xavier", dashes=(2, 2))
         ax.plot([he,]*2, [0, he_depth], color="dodgerblue", linestyle="--", label="He", dashes=(2, 2))
@@ -901,7 +905,7 @@ def plot_variance_depth_scale(data, shading="gouraud"):
     plt.gcf().tight_layout()
     plt.savefig(os.path.join(figures_dir, "variance_depth.pdf"), bbox_inches='tight')
 
-def plot_imperical_depth(fig, ax, dataset, dropout_rates, loss, depth_axis, init_axis, depth_scale_theory, type_loss, shading="gouraud"):
+def plot_emperical_depth(fig, ax, dataset, dropout_rates, loss, depth_axis, init_axis, depth_scale_theory, type_loss, shading="gouraud"):
     lc = LineCollection(depth_scale_theory, cmap=plt.get_cmap('Greens'))
     lc.set_array(dropout_rates)
     ax.add_collection(lc)
@@ -910,8 +914,8 @@ def plot_imperical_depth(fig, ax, dataset, dropout_rates, loss, depth_axis, init
     cbar_p.ax.set_title('$p$')
     ax.set_xlabel("Critical initialisation for $p$ ($\sigma^2_w$)")
     ax.set_ylabel("Number of layers ($l$)")
-    txt = ax.text(1.5, 15, r'$6\xi_c$', fontsize=15, color="black", weight="bold", horizontalalignment="center", verticalalignment="center")
-    txt = ax.text(1.5, 15, r'$6\xi_c$', fontsize=15, color="white", horizontalalignment="center", verticalalignment="center")
+    txt = ax.text(1.5, 15, r'$6\xi_\rho$', fontsize=15, color="black", weight="bold", horizontalalignment="center", verticalalignment="center")
+    txt = ax.text(1.5, 15, r'$6\xi_\rho$', fontsize=15, color="white", horizontalalignment="center", verticalalignment="center")
     txt.set_path_effects([PathEffects.withStroke(foreground='black')])
     ax.set_title(dataset.upper())
     ax.set_xlim(0.3, 2.1)
@@ -925,13 +929,13 @@ def plot_trainable_depth(data):
     fig, [ax1, ax2] = plt.subplots(1, 2, figsize=(8, 3))
 
     for ax, (dataset, results) in zip([ax1, ax2], data.items()):
-        dropout_rates = results["imperical"]["training_dropout_rates"]
-        loss = results["imperical"]["train_loss"]
-        depth_axis = results["imperical"]["train_depth_axis"]
-        init_axis = results["imperical"]["train_init_axis"]
+        dropout_rates = results["emperical"]["training_dropout_rates"]
+        loss = results["emperical"]["train_loss"]
+        depth_axis = results["emperical"]["train_depth_axis"]
+        init_axis = results["emperical"]["train_init_axis"]
         depth_scale_theory = results["theory"]["correlation_depth_scale"]
 
-        plot_imperical_depth(fig, ax, dataset, dropout_rates, loss, depth_axis, init_axis, depth_scale_theory, "Train loss")
+        plot_emperical_depth(fig, ax, dataset, dropout_rates, loss, depth_axis, init_axis, depth_scale_theory, "Train loss")
 
     fig.suptitle("Trainable depth")
 
@@ -948,13 +952,13 @@ def plot_generalisation_depth(data, shading="gouraud"):
     fig, [ax1, ax2] = plt.subplots(1, 2, figsize=(8, 3))
 
     for ax, (dataset, results) in zip([ax1, ax2], data.items()):
-        dropout_rates = results["imperical"]["training_dropout_rates"]
-        loss = results["imperical"]["test_loss"]
-        depth_axis = results["imperical"]["train_depth_axis"]
-        init_axis = results["imperical"]["train_init_axis"]
+        dropout_rates = results["emperical"]["training_dropout_rates"]
+        loss = results["emperical"]["test_loss"]
+        depth_axis = results["emperical"]["train_depth_axis"]
+        init_axis = results["emperical"]["train_init_axis"]
         depth_scale_theory = results["theory"]["correlation_depth_scale"]
 
-        plot_imperical_depth(fig, ax, dataset, dropout_rates, loss, depth_axis, init_axis, depth_scale_theory, "Test loss")
+        plot_emperical_depth(fig, ax, dataset, dropout_rates, loss, depth_axis, init_axis, depth_scale_theory, "Test loss")
 
     fig.suptitle("Generalisation depth")
 
@@ -1028,7 +1032,7 @@ def load_depth_scale():
         log_variance = np.ma.array(log_variance, mask=bad_indices)
 
         data[dataset] = {
-            "imperical": {
+            "emperical": {
                 # "inits": inits,
                 "variance": log_variance,
                 "depth_axis": depth_matrix,
@@ -1060,8 +1064,8 @@ def plot_depth_scales():
     data = load_depth_scale()
 
     plot_variance_depth_scale(data)
-    plot_trainable_depth(data)
-    plot_generalisation_depth(data)
+    # plot_trainable_depth(data)
+    # plot_generalisation_depth(data)
 
 if __name__ == "__main__":
     # plot settings
@@ -1074,10 +1078,10 @@ if __name__ == "__main__":
     figures_dir = os.path.join(file_dir, "../figures")
     os.makedirs(figures_dir, exist_ok=True)
 
-    plot_tanh()
-    plot_variance()
-    plot_variance_edge()
-    plot_correlation()
-    plot_correlation_edge_theory()
-    plot_fixed_point_convergence()
+    # plot_tanh()
+    # plot_variance()
+    # plot_variance_edge()
+    # plot_correlation()
+    # plot_correlation_edge_theory()
+    # plot_fixed_point_convergence()
     plot_depth_scales()

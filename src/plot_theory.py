@@ -24,7 +24,7 @@ from theory import critical_point, fixed_point, c_map, c_map_slope, depth_scale,
 
 def set_plot_params():
     sns.set_context("paper", rc={
-    # sns.set_context("paper", font_scale=2, rc={
+    # sns.set_context("paper", font_scale=1.2, rc={
         "image.cmap": "viridis",
         "lines.linewidth": 2,
         "lines.markersize": 4,
@@ -66,7 +66,8 @@ def plot_tanh():
     n_hidden_layers = 16
 
     n_tests = len(tests)
-    pal = get_colours(6, 7)[2:]
+    pal = get_colours(6, 7)[1:]
+    # pal = get_colours(6, 7)[2:]
     test_data = []
     for i, test in enumerate(tests):
         test_data.append(load_experiment(test, ["q_maps", "single_layer_qmap_sim", "multi_layer_qmap_sim"], results_dir))
@@ -78,7 +79,8 @@ def plot_tanh():
     ax2 = plt.subplot(gs[0, 1])
 
     # Add unity line
-    ax1.plot((0, qmax), (0, qmax), '--', color='k', zorder=900, dashes=(12, 24), label="Identity line")
+    ax1.plot((0, qmax), (0, qmax), '--', color='k', zorder=900, dashes=(6, 6), label="Identity line")
+    # ax1.plot((0, qmax), (0, qmax), '--', color='k', zorder=900, dashes=(12, 24), label="Identity line")
     ax1.set_xlim(0, qmax)
     ax1.set_ylim(0, qmax)
     ax1.set_xlabel(r'Input variance ($\nu^{l-1})$')
@@ -102,18 +104,19 @@ def plot_tanh():
                 if dist['dist'] == "none":
                     if act == "tanh":
                         label = "Tanh - none"
-                        col_i = 0
+                        col_i = 0 + 1
                     else:
                         label = "ReLU - none"
-                        col_i = 2
+                        col_i = 0
+                        # col_i = 2
 
                 elif "gauss" in dist['dist']:
                     if act == "tanh":
-                        label = "Tanh - add Gauss $(\sigma^2_\epsilon = $ " + str(dist['std']) + ")"
-                        col_i = 1
+                        label = "Tanh - additive Gauss $(\sigma^2_\epsilon = $ " + str(dist['std']) + ")"
+                        col_i = 1 + 1
                     else:
-                        label = "ReLU - add Gauss $(\sigma^2_\epsilon = $ " + str(dist['std']) + ")"
-                        col_i = 3
+                        label = "ReLU - additive Gauss $(\sigma^2_\epsilon = $ " + str(dist['std']) + ")"
+                        col_i = 3 + 1
 
                 for init in attr["inits"]:
                     dashes = (None, None)
@@ -128,7 +131,8 @@ def plot_tanh():
                     for w, b in zip(widxs, bidxs):
 
                         # theory line
-                        ax1.plot(qrange, qmaps[0, 0, :, 1], c=pal[col_i][shade_i], label=label, dashes=dashes)
+                        ax1.plot(qrange, qmaps[0, 0, :, 1], c=pal[col_i][shade_i], label=label)
+                        # ax1.plot(qrange, qmaps[0, 0, :, 1], c=pal[col_i][shade_i], label=label, dashes=dashes)
 
                     ############################################################################
                     # right
@@ -272,7 +276,7 @@ def plot_variance():
                 label = "Dropout"
             elif "gauss" in dist['dist']:
                 col_i = 3
-                label = "Mult Gauss"
+                label = "Multiplicative Gauss"
 
             for act in attr["activations"]:
                 for init in attr["inits"]:
@@ -389,7 +393,7 @@ def plot_correlation():
                     x = crange[-1] - 0.03
                     y = cmaps[0, 0, -10] - 0.015
                     if "std" in dist:
-                        label = "Mult Gauss"
+                        label = "Multiplicative Gauss"
 
                         ax1.text(
                             x, y, f"($\sigma_\epsilon = {dist['std']}$)",
@@ -421,6 +425,22 @@ def plot_correlation():
                     # Theory
                     for j in range(correlations.shape[0]):
                         ax2.plot(ctrajs[0, 0, j, :].T, c=pal[col_i][shade_i])
+
+                    x_axis = np.arange(0, ctrajs.shape[-1])
+                    x = x_axis[-1] - 1
+                    y = ctrajs[0, 0, 0, -1] + 0.1
+                    if "std" in dist:
+                        ax2.text(
+                            x, y, f"($\sigma_\epsilon = {dist['std']}$)",
+                            horizontalalignment='right',
+                            verticalalignment='top',
+                        )
+                    elif "prob_1" in dist:
+                        ax2.text(
+                            x, y, f"($p = {dist['prob_1']}$)",
+                            horizontalalignment='right',
+                            verticalalignment='top',
+                        )
 
     # Add unity line
     ax1.plot((0, 1), (0, 1), '--', color='k', zorder=900, label="Identity line")
@@ -1094,19 +1114,19 @@ def plot_alternate_inits():
             plt.plot([init,]*2, [0, height], color="blue", linestyle="--",
                     dashes=(2, 2), alpha=alphas[index])
         if index == 3:
-            plt.plot([init,]*2, [0, height], color="blue", label='Smaller alt inits (L1-L4)',
+            plt.plot([init,]*2, [0, height], color="blue", label='Smaller alternate initialisations (L1-L4)',
                     linestyle="--",
                     dashes=(2, 2), alpha=alphas[index])
         if index > 4 and index < 8:
             plt.plot([init,]*2, [0, height], color="orange", linestyle="--",
                     dashes=(2, 2), alpha=alphas[index])
         if index == 8:
-            plt.plot([init,]*2, [0, height], color="orange", label='Larger alt inits (R1-R4)',
+            plt.plot([init,]*2, [0, height], color="orange", label='Larger alternate initialisations (R1-R4)',
                     linestyle="--", dashes=(2, 2), alpha=alphas[index])
         if index == 9:
             plt.plot([init,]*2, [0, height], color="red", linestyle="--", dashes=(2, 2))
         if index == 10:
-            plt.plot([init,]*2, [0, height], color="red", label='Extreme inits (E1-E2)', linestyle="--", dashes=(2, 2))
+            plt.plot([init,]*2, [0, height], color="red", label='Extreme initialisations (E1-E2)', linestyle="--", dashes=(2, 2))
 
     plt.text(0.7, 35, 'L4')
     plt.text(0.99, 120, 'L3')
@@ -1124,7 +1144,7 @@ def plot_alternate_inits():
     plt.text(2.3, 250, 'Overflow', color='white')
     plt.text(0.13, 250, 'Underflow')
 
-    fig.legend(*ax.get_legend_handles_labels(), loc='lower center', ncol=3, bbox_to_anchor=(0.5, -0.1))
+    fig.legend(*ax.get_legend_handles_labels(), loc='lower center', ncol=3, bbox_to_anchor=(0.5, -0.15))
 
     plt.title("Initialisation region for limited-depth networks")
     plt.ylabel("Number of layers ($L$)")
@@ -1132,6 +1152,49 @@ def plot_alternate_inits():
 
     plt.gcf().tight_layout()
     plt.savefig(os.path.join(figures_dir, "init_sampling.pdf"), bbox_inches='tight')
+
+def plot_recurrence_example():
+    min_x, max_x = 0, 100
+    identity = np.linspace(min_x, max_x, 101)
+
+    x_star = 40
+    x_map = 2 * identity - 40
+    min_y, max_y = np.min(x_map), np.max(x_map)
+
+    fig, [ax1, ax2] = plt.subplots(1, 2, figsize=(8, 3))
+
+    ax1.plot(identity, identity, linestyle="--", color="black", label="Identity")
+    ax1.plot(identity, x_map, label="Recurrence")
+
+    ax1.plot([min_x, x_star], [x_star, x_star], linestyle="--", color="red")
+    ax1.plot([x_star, x_star], [min_y, x_star], linestyle="--", color="red")
+
+    for init in [39, 40, 41]:
+        x_dyn = np.power(2, identity) * init - np.power(2, identity) * 40
+        ax2.plot(identity, x_dyn, label=f"$x_0 = {init}$")
+
+    ax1.text(x_star * 0.9, x_star * 1.1, "$x^*$")
+
+    ax1.set_xlim(min_x, max_x)
+    ax1.set_ylim(min_y, max_y)
+
+    ax1.set_xlabel("$x_{n-1}$")
+    ax1.set_ylabel("$x_{n}$")
+    ax1.set_title("Iterative map")
+
+    ax2.set_xlabel("$n$")
+    ax2.set_ylabel("$x_{n}$")
+    ax2.set_title("Dynamics")
+
+    ax1.legend()
+    ax2.legend()
+    fig.suptitle("Recurrence relations")
+
+    fig.text(0.05, 0.825, "a)")
+    fig.text(0.55, 0.825, "b)")
+
+    plt.gcf().tight_layout()
+    plt.savefig(os.path.join(figures_dir, "recurrence.pdf"), bbox_inches='tight')
 
 if __name__ == "__main__":
     # plot settings
@@ -1146,9 +1209,10 @@ if __name__ == "__main__":
 
     # plot_tanh()
     # plot_variance()
-    # plot_correlation()
+    plot_correlation()
     # plot_fixed_point_convergence()
     # plot_depth_scales()
-    plot_limited_depth_init_region()
+    # plot_limited_depth_init_region()
     # plot_generalisation_depth_dropout()
-    plot_alternate_inits()
+    # plot_alternate_inits()
+    # plot_recurrence_example()

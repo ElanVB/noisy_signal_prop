@@ -1154,26 +1154,27 @@ def plot_alternate_inits():
     plt.savefig(os.path.join(figures_dir, "init_sampling.pdf"), bbox_inches='tight')
 
 def plot_recurrence_example():
-    min_x, max_x = 0, 100
-    identity = np.linspace(min_x, max_x, 101)
+    min_x, max_x = 0, 60
+    identity_map = np.linspace(min_x, max_x, 101)
+    identity_dyn = np.linspace(0, 10, 101)
 
     x_star = 40
-    x_map = 2 * identity - 40
+    x_map = 2 * identity_map - 40
     min_y, max_y = np.min(x_map), np.max(x_map)
 
     fig, [ax1, ax2] = plt.subplots(1, 2, figsize=(8, 3))
 
-    ax1.plot(identity, identity, linestyle="--", color="black", label="Identity")
-    ax1.plot(identity, x_map, label="Recurrence")
+    ax1.plot(identity_map, identity_map, linestyle="--", color="black", label="Identity")
+    ax1.plot(identity_map, x_map, label="Recurrence")
 
     ax1.plot([min_x, x_star], [x_star, x_star], linestyle="--", color="red")
     ax1.plot([x_star, x_star], [min_y, x_star], linestyle="--", color="red")
 
     for init in [39, 40, 41]:
-        x_dyn = np.power(2, identity) * init - np.power(2, identity) * 40
-        ax2.plot(identity, x_dyn, label=f"$x_0 = {init}$")
+        x_dyn = np.power(2, identity_dyn) * init - (np.power(2, identity_dyn) - 1) * 40
+        ax2.plot(identity_dyn, x_dyn, label=f"$x_0 = {init}$")
 
-    ax1.text(x_star * 0.9, x_star * 1.1, "$x^*$")
+    ax1.text(x_star * 0.95, x_star * 1.15, "$x^*$", fontsize="x-large")
 
     ax1.set_xlim(min_x, max_x)
     ax1.set_ylim(min_y, max_y)
@@ -1190,8 +1191,8 @@ def plot_recurrence_example():
     ax2.legend()
     fig.suptitle("Recurrence relations")
 
-    fig.text(0.05, 0.825, "a)")
-    fig.text(0.55, 0.825, "b)")
+    fig.text(0.05, 0.825, "(a)")
+    fig.text(0.55, 0.825, "(b)")
 
     plt.gcf().tight_layout()
     plt.savefig(os.path.join(figures_dir, "recurrence.pdf"), bbox_inches='tight')
@@ -1209,10 +1210,10 @@ if __name__ == "__main__":
 
     # plot_tanh()
     # plot_variance()
-    plot_correlation()
+    # plot_correlation()
     # plot_fixed_point_convergence()
     # plot_depth_scales()
     # plot_limited_depth_init_region()
     # plot_generalisation_depth_dropout()
     # plot_alternate_inits()
-    # plot_recurrence_example()
+    plot_recurrence_example()
